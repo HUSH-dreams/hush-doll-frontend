@@ -1,0 +1,17 @@
+.main-container {
+    color: rgb(234, 201, 136);
+    overflow: hidden;
+    position: relative;
+    z-index:1;
+}
+
+.main-container-before{
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0.84;
+    z-index: -1;
+}

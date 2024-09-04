@@ -1,0 +1,18 @@
+.header-corner {
+    font-weight: bold;
+}
+
+.center {
+    margin: auto;
+}
+
+.center-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 10px 0 0 0;
+}
+
+.popup-main {
+    background-color: rgb(234, 201, 136);
+}

@@ -1,0 +1,69 @@
+.line-break {
+    display: contents;
+    color: green
+}
+
+.line-break::before {
+    content: '';
+    min-width: 100% !important;
+}
+
+.numbers {
+    height: 39px;
+    width: 39px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.numbers-other {
+    width: auto !important;
+}
+
+.numbers-38 {
+    height: 38px !important;
+}
+
+.numbers-37 {
+    height: 37px !important;
+}
+
+.numbers-36 {
+    height: 36px !important;
+}
+
+.numbers-35 {
+    height: 35px !important;
+}
+
+.crystals {
+    height: 30px !important;
+}
+
+.prefix-button {
+    color: rgb(234, 201, 136) !important;
+}
+
+.prefix-button {
+    color: rgb(234, 201, 136) !important;
+}
+
+.prefix-button:hover {
+    box-shadow: 0 0 10px 2px white !important;
+    color: whitesmoke;
+    transition: all 20ms ease-in-out
+}
+
+.items-item-slot {
+    margin-right: 4px;
+    width: 35px;
+    height: 34px;
+    margin-bottom: 4px;
+    background-size: 35px 34px;
+}
+
+.selected-prefix {
+    color: whitesmoke !important;
+    box-shadow: 0 0 10px 2px white !important;
+}

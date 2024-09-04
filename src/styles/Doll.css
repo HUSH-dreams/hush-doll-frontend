@@ -1,0 +1,98 @@
+.doll-list-item:hover {
+    transition: all ease-in-out 120ms;
+    box-shadow: 0 0 10px 2px white !important;
+}
+
+.doll-list-item {
+    margin: 0 16px;
+    background-color: rgb(120,120,120) !important;
+
+}
+
+.doll-list-item:hover .text {
+    transition: color ease-in-out 300ms;
+    color: white !important;
+}
+
+.text {
+    color: rgb(234, 201, 136) !important;
+}
+
+.white {
+    color: whitesmoke !important;
+}
+
+.text-dark {
+    color: rgb(36, 33, 29) !important;
+}
+
+.trash:hover {
+    color: white !important;
+    box-shadow: 0 0 10px 2px white !important;
+}
+
+.trash-dark {
+    color: rgb(36, 33, 29) !important;
+}
+
+.trash-dark:hover {
+    color: white !important;
+    box-shadow: 0 0 10px 2px white !important;
+}
+
+.button-hover-dark:hover .trash-dark {
+    color: white !important;
+    box-shadow: none !important;
+    transition: color ease-in-out 150ms;
+}
+
+.share-toggle {
+    font-weight: bold !important;
+    color: rgb(140,140,140) !important;
+    border: 1px solid rgb(140,140,140) !important;
+    box-sizing: border-box;
+    height: 40px;
+    width: 100px;
+}
+
+.share-toggle:hover {
+    color: white !important;
+    border: 3px solid white !important;
+}
+
+.share-toggle-left {
+    border-radius: 4px 0 0 4px !important;
+}
+
+.share-toggle-right {
+    border-radius: 0 4px 4px 0 !important;
+}
+
+.share-toggle-selected {
+    color: rgb(36, 33, 29) !important;
+    border: 3px solid rgb(36, 33, 29) !important;
+    box-sizing: border-box !important;
+}
+
+#change-name::placeholder {
+    color: rgb(36,33,29);
+}
+
+#change-name:hover, #change-name:focus {
+    box-shadow: 0 0 10px 2px white !important;
+}
+
+.share-link {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overflow-y: scroll;
+    padding: 8px;
+    border: 2px solid rgb(36, 33, 29);
+    border-radius: 5px;
+    background-color: inherit;
+    white-space: nowrap;
+}
+
+.share-link::-webkit-scrollbar {
+    display: none;
+}
