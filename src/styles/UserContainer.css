@@ -1,0 +1,43 @@
+form {
+    align-items: center;
+}
+
+.form-input {
+    margin: 8px 0;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px;
+    background-color: rgb(234, 201, 136);
+    border: 2px solid rgb(103, 87, 77);
+    border-radius: 7px;
+}
+
+.form-input:focus {
+    box-shadow: 0 0 10px 1px white;
+}
+
+.form-input::placeholder {
+    color: rgb(70, 67, 65);
+    font-weight: bold;
+}
+
+.form-input:focus::placeholder {
+    color: rgb(48,44,43);
+}
+
+button {
+    margin: 8px 0;
+}
+
+.doll-list-selected {
+    color: whitesmoke !important;
+    border-radius: unset !important;
+    box-sizing: border-box !important;
+    border-bottom: 3px solid whitesmoke !important;
+}
+
+.doll-list {
+    font-weight: bold !important;
+    box-sizing: border-box !important;
+    color: rgb(234, 201, 136);
+}

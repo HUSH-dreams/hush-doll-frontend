@@ -1,0 +1,9 @@
+export const selectTables = state => state.table.tables;
+export const selectStatic = state => state.table.static;
+export const selectError = state => state.table.error;
+export const selectLoading = state => state.table.loading;
+export const selectTable = state => state.table.table;
+export const selectCastles = state => state.table.castles;
+export const selectCastlesLvlId = state => state.table.castlesLvlId;
+export const selectFavoriteCastles = state => state.table.favoriteCastles;
+export const selectFavoriteDate = state => state.table.favoriteChangeDate;

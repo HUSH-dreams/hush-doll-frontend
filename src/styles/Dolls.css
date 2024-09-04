@@ -1,0 +1,10 @@
+.MuiPagination-root {
+    button {
+        color: rgb(234, 201, 136);
+    }
+}
+
+.Mui-selected {
+    color: rgb(36,33,29) !important;
+    font-weight: bold !important;
+}
