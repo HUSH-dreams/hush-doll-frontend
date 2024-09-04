@@ -498,9 +498,5 @@ const langReducer = (state = initialState, action) => {
                 texts: state.eng ? state.ruTexts : state.engTexts,
                 eng: !state.eng,
             }
-        default:
-            return state
     }
-}
-
-export default langReducer;
+};
