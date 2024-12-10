@@ -7,3 +7,4 @@ export const selectCastles = state => state.table.castles;
 export const selectCastlesLvlId = state => state.table.castlesLvlId;
 export const selectFavoriteCastles = state => state.table.favoriteCastles;
 export const selectFavoriteDate = state => state.table.favoriteChangeDate;
+export const selectCalculatorError = state => state.table.calculatorError;

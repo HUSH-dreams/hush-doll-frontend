@@ -27,7 +27,11 @@ import {
     TABLE_DELETE_TABLE_START,
     TABLE_ADD_CLAN_START,
     TABLE_ADD_CLAN_SUCCESS,
-    TABLE_DELETE_CLAN_START, TABLE_DELETE_CLAN_SUCCESS, TABLE_SELECT_FAVORITE_CASTLES, TABLE_UNSET_FAVORITE_CASTLES
+    TABLE_DELETE_CLAN_START,
+    TABLE_DELETE_CLAN_SUCCESS,
+    TABLE_SELECT_FAVORITE_CASTLES,
+    TABLE_CALCULATOR_ERROR_SET,
+    TABLE_CALCULATOR_ERROR_UNSET
 } from "./actions";
 
 const initialState = {
@@ -39,11 +43,22 @@ const initialState = {
     error: null,
     loading: false,
     castleSaveError: null,
-    favoriteCastles: []
+    favoriteCastles: [],
+    calculatorError: ''
 }
 
 const tableReducer = (state = initialState, action) => {
     switch (action.type) {
+        case TABLE_CALCULATOR_ERROR_SET:
+            return {
+                ...state,
+                calculatorError: action.payload
+            }
+        case TABLE_CALCULATOR_ERROR_UNSET:
+            return {
+                ...state,
+                calculatorError: ''
+            }
         case TABLE_START:
             return {
                 ...state,

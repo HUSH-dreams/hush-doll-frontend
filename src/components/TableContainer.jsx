@@ -355,9 +355,9 @@ const TableContainer = () => {
                                 id="chosen" onClick={handleSelectTable}>{buttons.chosen}</Button>
                     </div>
                     <div style={{width: '30%', textAlign: 'right'}}>
-                        {/*<Button className='button-hover' onClick={handleOpenCalc} sx={{color: 'whitesmoke !important'}}>*/}
-                        {/*    Toggle*/}
-                        {/*</Button>*/}
+                        <Button className='button-hover' onClick={handleOpenCalc} sx={{color: 'whitesmoke !important'}}>
+                            Toggle
+                        </Button>
                     </div>
                 </div>
                 {
@@ -377,19 +377,26 @@ const TableContainer = () => {
                             <span style={{width: 100}}>{texts.date}</span>
                             <span style={{width: 100}}>{texts.toAttack}</span>
                             <span style={{width: 100}}>{texts.sphereTime}</span>
+                            <span style={{width: 100}}>Лива</span>
                             <span style={{width: 100}}>{texts.status}</span>
                             <span style={{width: 100}}>{texts.clan}</span>
                             <span style={{width: 150}}>{texts.commentary}</span>
                             <span style={{width: 100}}>{texts.editor}</span>
-                            <span style={{width: 130}}></span>
                         </div>
                         <div>
                             {
                                 openCalc && (<div style={{position: 'relative', width: '100%'}}>
-                                    <div style={{position: "absolute", top: 0, left: '50%', zIndex: 11}}>
+                                    <div style={{
+                                        position: 'absolute',
+                                        left: '50%',
+                                        top: '50%',
+                                        transform: 'translateX(-50%)',
+                                        zIndex: 11
+                                    }}>
                                         <Calculator/>
                                     </div>
-                                    <div className="modal" style={{display: display}} onClick={handleOpenCalc}></div>
+                                    <div className="modal" style={{display: display}} onClick={handleOpenCalc}>
+                                    </div>
                                 </div>)
                             }
                         </div>
