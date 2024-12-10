@@ -1,4 +1,5 @@
 import {TOGGLE_LANG} from "./actions";
+import dollReducer from "../doll/reducer";
 
 const initialState = {
     eng: false,
@@ -498,5 +499,9 @@ const langReducer = (state = initialState, action) => {
                 texts: state.eng ? state.ruTexts : state.engTexts,
                 eng: !state.eng,
             }
+        default:
+            return state;
     }
 };
+
+export default langReducer;

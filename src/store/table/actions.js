@@ -29,6 +29,17 @@ export const TABLE_CASTLE_SAVE_START = "TABLE::TABLE_CASTLE_SAVE_START";
 export const TABLE_CASTLE_SAVE_SUCCESS = "TABLE::TABLE_CASTLE_SAVE_SUCCESS";
 export const TABLE_CASTLE_SAVE_ERROR = "TABLE::TABLE_CASTLE_SAVE_ERROR";
 export const TABLE_SELECT_FAVORITE_CASTLES = "TABLE::TABLE_SELECT_FAVORITE_CASTLES";
+export const TABLE_CALCULATOR_ERROR_SET = "TABLE::TABLE_CALCULATOR_ERROR_SET";
+export const TABLE_CALCULATOR_ERROR_UNSET = "TABLE::TABLE_CALCULATOR_ERROR_UNSET";
+
+export const tableCalculatorErrorSet = (error) => ({
+    type: TABLE_CALCULATOR_ERROR_SET,
+    payload: error
+});
+
+export const tableCalculatorErrorUnset = () => ({
+    type: TABLE_CALCULATOR_ERROR_UNSET
+});
 
 export const tableStart = () => ({
     type: TABLE_START
