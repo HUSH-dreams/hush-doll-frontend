@@ -127,7 +127,7 @@ const Doll = ({doll, index, token, list}) => {
     return (
         <div>
             <div className="modal" style={{display: display}} onClick={handleClick}></div>
-            <Paper className="doll-list-item" style={{
+            <Paper className="list-item" style={{
                 background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
                 boxShadow: '0px 0px 7px -1px rgb(234, 201, 136)'
             }} elevation={3}

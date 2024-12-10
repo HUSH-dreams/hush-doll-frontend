@@ -8,6 +8,7 @@ import Home from "./Home";
 import DollSiteContainer from "./DollSiteContainer";
 import TableSiteContainer from "./TableSiteContainer";
 import EmailTest from "./EmailTest";
+import '../styles/main.css'
 
 function App() {
     return (

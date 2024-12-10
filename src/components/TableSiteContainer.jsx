@@ -24,7 +24,7 @@ const TableSiteContainer = () => {
                     border: '1px solid rgb(234, 201, 136)',
                     borderLeft: 'none',
                     borderRadius: '0 10px 10px 0',
-                    width: 1137,
+                    width: '100%',
                     padding: 0,
                     zIndex: 1
                 }}>

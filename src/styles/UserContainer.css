@@ -28,16 +28,3 @@ form {
 button {
     margin: 8px 0;
 }
-
-.doll-list-selected {
-    color: whitesmoke !important;
-    border-radius: unset !important;
-    box-sizing: border-box !important;
-    border-bottom: 3px solid whitesmoke !important;
-}
-
-.doll-list {
-    font-weight: bold !important;
-    box-sizing: border-box !important;
-    color: rgb(234, 201, 136);
-}
