@@ -63,11 +63,11 @@ const DollUserContainer = () => {
                             </Button>
                         </p>
                         <div style={{display: 'flex', justifyContent: 'space-evenly', marginBottom: 16}}>
-                            <Button className={list === 'dolls' ? "doll-list doll-list-selected" : "button-hover"}
+                            <Button className={list === 'dolls' ? "list list-selected" : "button-hover"}
                                     id="own-dolls" onClick={handleClick}>
                                 {buttons.yourDolls}
                             </Button>
-                            <Button className={list !== 'dolls' ? "doll-list doll-list-selected" : "button-hover"}
+                            <Button className={list !== 'dolls' ? "list list-selected" : "button-hover"}
                                     id="other-dolls" onClick={handleClick}>
                                 {buttons.otherDolls}
                             </Button>

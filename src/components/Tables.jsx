@@ -142,14 +142,14 @@ const Tables = ({user, token}) => {
                             <div style={{display: 'flex', justifyContent: 'space-around', marginBottom: 10}}>
                                 <Button
                                     id="table-users"
-                                    className={list === 'table-users' ? "doll-list doll-list-selected" : "button-hover"}
+                                    className={list === 'table-users' ? "list list-selected" : "button-hover"}
                                     onClick={e => setList(e.target.id)}
                                 >
                                     {buttons.users}
                                 </Button>
                                 <Button
                                     id="table-clans"
-                                    className={list !== 'table-users' ? "doll-list doll-list-selected" : "button-hover"}
+                                    className={list !== 'table-users' ? "list list-selected" : "button-hover"}
                                     onClick={e => setList(e.target.id)}
                                 >
                                     {buttons.clans}

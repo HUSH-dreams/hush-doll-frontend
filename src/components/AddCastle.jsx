@@ -2,9 +2,8 @@ import React from 'react';
 
 const AddCastle = ({chosen, children}) => {
     return (
-        <div style={{border: '1px solid', borderRadius: 6, padding: 6, width: 50,
-            display: "flex", justifyContent: 'space-between',
-            margin: '0 5px',
+        <div className="table-container__table-content-add-castle"
+            style={{
             color: chosen ? 'white' : 'inherit',
             borderColor: chosen ? 'white' : 'dimgrey'
         }}>
