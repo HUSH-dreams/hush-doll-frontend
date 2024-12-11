@@ -12,17 +12,17 @@
 }
 
 .table-castle__main-container {
-    margin: 0 10px;
+    margin: 0 0.7rem;
 }
 
 .table-castle__main-container:hover {
     cursor: pointer;
 }
 
-.table-castle__main-container > span, .table-castle__edit-inputs > span, .table-castle__edit-header > span {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 5px;
+.table-castle__main-container > span,
+.table-castle__edit-inputs > span,
+.table-castle__edit-header > span {
+    margin: 0 0.4rem;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -30,12 +30,20 @@
     -webkit-box-orient: vertical;
 }
 
+.table-castle__rows--small {
+    width: 80px;
+}
+
+.table-castle__rows--wide {
+    width: 120px;
+}
+
 .table-castle__edit-container {
     z-index: 10 !important;
     cursor: default !important;
-    box-shadow: 0 0 10px 2px white;
-    margin: 0 10px;
-    padding: 0 10px;
+    box-shadow: var(--shadow2);
+    margin: 0 0.6rem;
+    padding: 0 0.6rem;
     position: absolute;
     top: 0;
     width: calc(100% - 20px);
@@ -50,7 +58,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: whitesmoke;
+    color: var(--secondary-color);
     font-weight: bold;
     width: 100%;
     text-align: center;
@@ -63,7 +71,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: whitesmoke;
+    color: var(--secondary-color);
     font-weight: bold;
     width: 100%;
     text-align: center;
@@ -71,28 +79,28 @@
 }
 
 .table-castle__edit-input {
-    margin: 8px 0;
+    margin: 0.5rem 0;
     box-sizing: border-box;
-    color: whitesmoke;
-    width: 54px;
-    padding: 8px;
-    border: 2px solid rgb(234, 201, 136);
+    color: var(--secondary-color);
+    width: calc(100% - 1rem);
+    padding: 0.5rem;
+    border: 2px solid var(--primary-color);
     border-radius: 7px;
 }
 
 .table-castle__edit-input:focus {
-    box-shadow: 0 0 10px 1px white;
-    background: rgb(234, 201, 136) !important;
-    color: rgb(70, 67, 65);
+    box-shadow: var(--shadow1);
+    background: var(--primary-color) !important;
+    color: var(--brown-color);
 }
 
 .table-castle__edit-input::placeholder {
-    color: rgb(70, 67, 65);
+    color: var(--brown-color);
     font-weight: bold;
 }
 
 .table-castle__edit-input:focus::placeholder {
-    color: rgb(48,44,43);
+    color: var(--brown-color);
 }
 
 .table-castle__edit-select {
@@ -108,5 +116,5 @@
 }
 
 .table-castle__edit-select:hover {
-    box-shadow: 0 0 10px 1px white;
+    box-shadow: var(--shadow1);
 }

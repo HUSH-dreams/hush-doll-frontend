@@ -477,17 +477,17 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
             borderRadius: !isEdit ? 5 : (error ? 0 : '0 0 5px 5px'),
             boxShadow: isMouseOver && !isEdit && '0 0 10px 2px white'
         }}>
-            <span>{castle.lvl}</span>
-            <span>{eng ? castle.nameEng : castle.nameRu}</span>
-            <span className="text-secondary"><b>{thetime}</b></span>
-            <span>{fillingDay}</span>
-            <span>{thetimeRed}</span>
-            <span>{thisSpheretime}</span>
-            <span>{castle.fillingLvl}</span>
-            <span style={{backgroundColor: statusBgr}}>&nbsp;</span>
-            <span>{currentClan?.name}</span>
-            <span>{castle.commentary}</span>
-            <span>{lastUpdateUsername?.nickname}</span>
+            <span className="table-castle__rows--small">{castle.lvl}</span>
+            <span className="table-castle__rows--wide">{eng ? castle.nameEng : castle.nameRu}</span>
+            <span className="table-castle__rows--small"><b className="text-secondary">{thetime}</b></span>
+            <span className="table-castle__rows--wide">{fillingDay}</span>
+            <span className="table-castle__rows--small">{thetimeRed}</span>
+            <span className="table-castle__rows--small">{thisSpheretime}</span>
+            <span className="table-castle__rows--small">{castle.fillingLvl}</span>
+            <span className="table-castle__rows--small" style={{backgroundColor: statusBgr}}>&nbsp;</span>
+            <span className="table-castle__rows--wide">{currentClan?.name}</span>
+            <span className="table-castle__rows--wide">{castle.commentary}</span>
+            <span className="table-castle__rows--wide">{lastUpdateUsername?.nickname}</span>
         </div>
         {isEdit && <div className="table-castle__edit-container" style={{
             background: url,
@@ -496,23 +496,23 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
             <div className="table-castle__edit-header" style={{
                 height: isEdit ? 40 : 0
             }}>
-                <span>{texts.level}</span>
-                <span>{texts.name}</span>
-                <span>{texts.time}</span>
-                <span>{texts.fillDate}</span>
-                <span>{texts.fillingLevel}</span>
-                <span>{texts.sphereTime}</span>
-                <span>{texts.clan}</span>
-                <span>{texts.commentary}</span>
-                <span></span>
+                <span className="table-castle__rows--small">{texts.level}</span>
+                <span className="table-castle__rows--wide">{texts.name}</span>
+                <span className="table-castle__rows--small">{texts.time}</span>
+                <span className="table-castle__rows--wide">{texts.fillDate}</span>
+                <span className="table-castle__rows--small">{texts.fillingLevel}</span>
+                <span className="table-castle__rows--small">{texts.sphereTime}</span>
+                <span className="table-castle__rows--wide">{texts.clan}</span>
+                <span className="table-castle__rows--wide">{texts.commentary}</span>
+                <span className="table-castle__rows--wide"></span>
             </div>
             <div className="table-castle__edit-inputs"
                  style={{
                      background: url
                  }}>
-                <span>{castle.lvl}</span>
-                <span>{eng ? castle.nameEng : castle.nameRu}</span>
-                <span>
+                <span className="table-castle__rows--small">{castle.lvl}</span>
+                <span className="table-castle__rows--wide">{eng ? castle.nameEng : castle.nameRu}</span>
+                <span className="table-castle__rows--small">
                     <input
                         style={{background: url}}
                         className="table-castle__edit-input"
@@ -524,7 +524,7 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
                         autoFocus
                     />
                 </span>
-                <span>
+                <span className="table-castle__rows--wide">
                     <select id="select-date" className="table-castle__edit-input table-castle__edit-select"
                             style={{
                                 background: url
@@ -537,7 +537,7 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
                         <option value="3">{selects.twoDaysAgo}</option>
                     </select>
                 </span>
-                <span>
+                <span className="table-castle__rows--small">
                     <input type="text"
                            style={{background: url}}
                            className="table-castle__edit-input"
@@ -547,7 +547,8 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
                            onBlur={validateFillingLvl}
                     />
                 </span>
-                <span><input
+                <span className="table-castle__rows--small">
+                    <input
                     style={{background: url}}
                     className="table-castle__edit-input" type="text"
                     value={spheretime}
@@ -555,7 +556,7 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
                     onChange={e => setSpheretime(e.target.value)}
                     onBlur={validateSpheretime}
                 /></span>
-                <span>
+                <span className="table-castle__rows--wide">
                     <select id="table-castle__edit-select" className="table-castle__edit-input table-castle__edit-select"
                             style={{
                                 background: url
@@ -566,14 +567,14 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
                         {clans.map(clan => (<option value={clan.id} key={clan.id}>{clan.name}</option>))}
                     </select>
                 </span>
-                <span>
+                <span className="table-castle__rows--wide">
                     <input style={{
                         background: url,
                         width: 'calc(100% - 20px)'
                     }} className="table-castle__edit-input" type="text" value={commentary} onClick={clearCommentary}
                            onChange={e => setCommentary(e.target.value)}/>
                 </span>
-                <span>
+                <span className="table-castle__rows--wide">
                     <Button className="button-hover"
                             onClick={handleConfirm}>{buttons.confirm}</Button>
                 </span>
