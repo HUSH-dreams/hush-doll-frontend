@@ -11,7 +11,7 @@ const Layout = () => {
                     background: `url(${process.env.REACT_APP_BACKEND_URL}/image/ilsa2) no-repeat center center fixed`,
                     backgroundSize: 'cover'
                 }}>
-                    <div style={{backgroundColor: 'lightbrown', height: '100vh', zIndex: 1, width: 1640, margin: 'auto'}}>
+                    <div style={{backgroundColor: 'lightbrown', height: '100vh', zIndex: 1, width: 1490, margin: 'auto'}}>
                         <header style={{height: 30}}>
                             <PageMenu/>
                         </header>

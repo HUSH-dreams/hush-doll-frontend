@@ -329,13 +329,13 @@ const TableContainer = () => {
                         </Button>
                     </div>
                     <div className="table-container__menu">
-                        <Button className={castleLvlId === '15-30' ? "list list-selected" : "button-hover"}
+                        <Button className={castleLvlId === '15-30' ? "list list--selected" : "button-hover"}
                                 id="15-30" onClick={handleSelectTable}>15-30</Button>
-                        <Button className={castleLvlId === '45-75' ? "list list-selected" : "button-hover"}
+                        <Button className={castleLvlId === '45-75' ? "list list--selected" : "button-hover"}
                                 id="45-75" onClick={handleSelectTable}>45-75</Button>
-                        <Button className={castleLvlId === '90+' ? "list list-selected" : "button-hover"}
+                        <Button className={castleLvlId === '90+' ? "list list--selected" : "button-hover"}
                                 id="90+" onClick={handleSelectTable}>90+</Button>
-                        <Button className={castleLvlId === 'chosen' ? "list list-selected" : "button-hover"}
+                        <Button className={castleLvlId === 'chosen' ? "list list--selected" : "button-hover"}
                                 id="chosen" onClick={handleSelectTable}>{buttons.chosen}</Button>
                     </div>
                     <div className="table-container__calc">
@@ -347,17 +347,17 @@ const TableContainer = () => {
                 {
                     castle && (<div className="table-container__main-content">
                         <div className="table-container__table-header">
-                            <span>{texts.level}</span>
-                            <span>{texts.name}</span>
-                            <span>{texts.time}</span>
-                            <span>{texts.date}</span>
-                            <span>{texts.toAttack}</span>
-                            <span>{texts.sphereTime}</span>
-                            <span>{texts.fillingLevel}</span>
-                            <span>{texts.status}</span>
-                            <span>{texts.clan}</span>
-                            <span>{texts.commentary}</span>
-                            <span>{texts.editor}</span>
+                            <span className="table-container__table-header--small">{texts.level}</span>
+                            <span className="table-container__table-header--wide">{texts.name}</span>
+                            <span className="table-container__table-header--small">{texts.time}</span>
+                            <span className="table-container__table-header--wide">{texts.date}</span>
+                            <span className="table-container__table-header--small">{texts.toAttack}</span>
+                            <span className="table-container__table-header--small">{texts.sphereTime}</span>
+                            <span className="table-container__table-header--small">{texts.fillingLevel}</span>
+                            <span className="table-container__table-header--small">{texts.status}</span>
+                            <span className="table-container__table-header--wide">{texts.clan}</span>
+                            <span className="table-container__table-header--wide">{texts.commentary}</span>
+                            <span className="table-container__table-header--wide">{texts.editor}</span>
                         </div>
                         {
                             openCalc && (<div className="table-container__calc-modal">

@@ -1,6 +1,10 @@
 :root {
     --primary-color: rgb(234, 201, 136);
     --secondary-color: whitesmoke;
+    --brown-color: rgb(70, 67, 65);
+    --red-color: rgb(186, 71, 50);
+    --shadow1: 0 0 10px 1px var(--secondary-color);
+    --shadow2: 0 0 10px 2px var(--secondary-color);
 }
 
 .text-primary {
@@ -11,7 +15,11 @@
     color: var(--secondary-color)
 }
 
-.list-selected {
+.text-red {
+    color: var(--red-color)
+}
+
+.list--selected {
     color: var(--secondary-color) !important;
     border-radius: unset !important;
     box-sizing: border-box !important;
