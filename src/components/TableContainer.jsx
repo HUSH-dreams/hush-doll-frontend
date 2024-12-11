@@ -1,20 +1,17 @@
 import React, {useEffect, useState} from 'react';
+import '../styles/table-container.css'
 import {useDispatch, useSelector} from "react-redux";
 import {
     selectCastles,
     selectCastlesLvlId,
     selectError,
-    selectFavoriteCastles, selectFavoriteDate,
+    selectFavoriteCastles,
+    selectFavoriteDate,
     selectTable
 } from "../store/table/selectors";
 import Button from "@mui/material/Button";
 import {selectButtons, selectLang, selectTexts} from "../store/lang/selectors";
-import {
-    setFavoriteCastles,
-    tableSelectCastle,
-    tablesUnset,
-    tableUnset
-} from "../store/table/actions";
+import {setFavoriteCastles, tableSelectCastle, tablesUnset, tableUnset} from "../store/table/actions";
 import TableCastle from "./TableCastle";
 import {selectToken} from "../store/user/selectors";
 import Flags from "./Flags";
@@ -301,107 +298,79 @@ const TableContainer = () => {
     return (
         <>
             {shareString && (<TableLoad shareString={shareString} token={token}/>)}
-            {table ? (<div style={{
-                padding: '0 16px 16px 16px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-around',
-                height: '100%'
-            }}>
-                <div style={{width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <div style={{width: 200}}>
+            {table ? (<div className="table-container">
+                <div className="table-container__header">
+                    <div className="table-container__time">
                         <div>
-                            <b style={{color: 'whitesmoke'}}>
+                            <b>
                                 {new Date(currentTime).getHours().toString().padStart(2, "0")}
                                 :{new Date(currentTime).getMinutes().toString().padStart(2, "0")}
                             </b>&nbsp;{texts.localTime}
                         </div>
                         <div>
-                            <b style={{color: 'whitesmoke'}}>
+                            <b>
                                 {new Date(moscowTime).getHours().toString().padStart(2, "0")}
                                 :{new Date(moscowTime).getMinutes().toString().padStart(2, "0")}
                             </b>&nbsp;{texts.moscowTime}
                         </div>
                     </div>
-                    <h3 style={{color: 'whitesmoke'}}>
+                    <h3 className="table-container__header-text">
                         {table.dynamic.tableName}
                     </h3>
-                    <div style={{
-                        alignSelf: 'start',
-                        marginRight: -17,
-                        width: 200,
-                        display: 'flex',
-                        justifyContent: "space-around"
-                    }}>
-                        <div></div>
+                    <div className="table-container__flags">
                         <Flags eng={eng}/>
                     </div>
                 </div>
-                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 20}}>
-                    <div style={{width: '30%'}}>
+                <div className="table-container__nav">
+                    <div>
                         {texts.sortedBy}
                         <Button className='button-hover' onClick={toggleSort} sx={{color: 'whitesmoke !important'}}>
                             {sortedBy}
                         </Button>
                     </div>
-                    <div>
-                        <Button className={castleLvlId === '15-30' ? "doll-list doll-list-selected" : "button-hover"}
+                    <div className="table-container__menu">
+                        <Button className={castleLvlId === '15-30' ? "list list--selected" : "button-hover"}
                                 id="15-30" onClick={handleSelectTable}>15-30</Button>
-                        <Button className={castleLvlId === '45-75' ? "doll-list doll-list-selected" : "button-hover"}
+                        <Button className={castleLvlId === '45-75' ? "list list--selected" : "button-hover"}
                                 id="45-75" onClick={handleSelectTable}>45-75</Button>
-                        <Button className={castleLvlId === '90+' ? "doll-list doll-list-selected" : "button-hover"}
+                        <Button className={castleLvlId === '90+' ? "list list--selected" : "button-hover"}
                                 id="90+" onClick={handleSelectTable}>90+</Button>
-                        <Button className={castleLvlId === 'chosen' ? "doll-list doll-list-selected" : "button-hover"}
+                        <Button className={castleLvlId === 'chosen' ? "list list--selected" : "button-hover"}
                                 id="chosen" onClick={handleSelectTable}>{buttons.chosen}</Button>
                     </div>
-                    <div style={{width: '30%', textAlign: 'right'}}>
-                        <Button className='button-hover' onClick={handleOpenCalc} sx={{color: 'whitesmoke !important'}}>
+                    <div className="table-container__calc">
+                        <Button className='button-hover' onClick={handleOpenCalc}>
                             Toggle
                         </Button>
                     </div>
                 </div>
                 {
-                    castle && (<div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-around',
-                            height: 40,
-                            color: 'whitesmoke',
-                            fontWeight: 'bold',
-                            textAlign: 'center',
-                            alignItems: 'center'
-                        }}>
-                            <span style={{width: 100}}>{texts.level}</span>
-                            <span style={{width: 100}}>{texts.name}</span>
-                            <span style={{width: 100}}>{texts.time}</span>
-                            <span style={{width: 100}}>{texts.date}</span>
-                            <span style={{width: 100}}>{texts.toAttack}</span>
-                            <span style={{width: 100}}>{texts.sphereTime}</span>
-                            <span style={{width: 100}}>Лива</span>
-                            <span style={{width: 100}}>{texts.status}</span>
-                            <span style={{width: 100}}>{texts.clan}</span>
-                            <span style={{width: 150}}>{texts.commentary}</span>
-                            <span style={{width: 100}}>{texts.editor}</span>
+                    castle && (<div className="table-container__main-content">
+                        <div className="table-container__table-header">
+                            <span className="table-container__table-header--small">{texts.level}</span>
+                            <span className="table-container__table-header--wide">{texts.name}</span>
+                            <span className="table-container__table-header--small">{texts.time}</span>
+                            <span className="table-container__table-header--wide">{texts.date}</span>
+                            <span className="table-container__table-header--small">{texts.toAttack}</span>
+                            <span className="table-container__table-header--small">{texts.sphereTime}</span>
+                            <span className="table-container__table-header--small">{texts.fillingLevel}</span>
+                            <span className="table-container__table-header--small">{texts.status}</span>
+                            <span className="table-container__table-header--wide">{texts.clan}</span>
+                            <span className="table-container__table-header--wide">{texts.commentary}</span>
+                            <span className="table-container__table-header--wide">{texts.editor}</span>
                         </div>
-                        <div>
-                            {
-                                openCalc && (<div style={{position: 'relative', width: '100%'}}>
-                                    <div style={{
-                                        position: 'absolute',
-                                        left: '50%',
-                                        top: '50%',
-                                        transform: 'translateX(-50%)',
-                                        zIndex: 11
-                                    }}>
-                                        <Calculator/>
-                                    </div>
-                                    <div className="modal" style={{display: display}} onClick={handleOpenCalc}>
-                                    </div>
-                                </div>)
-                            }
-                        </div>
-                        <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%'}}>
-                            <div className={(castleLvlId === 'chosen' && castle.length > 16) ? 'scroll' : undefined}>
+                        {
+                            openCalc && (<div className="table-container__calc-modal">
+                                <div className="table-container__calc-modal-content">
+                                    <Calculator/>
+                                </div>
+                                <div className="modal" style={{display: display}} onClick={handleOpenCalc}>
+                                </div>
+                            </div>)
+                        }
+                        <div className="table-container__table-content">
+                            <div
+                                className="table-container__table-content-scroll">
                                 {
                                     castle.map(thisCastle => {
                                         let underline = false;
@@ -415,7 +384,7 @@ const TableContainer = () => {
                                 }
                             </div>
                             {
-                                castleLvlId === 'chosen' && (<div style={{display: 'flex', margin: '10px auto'}}>
+                                castleLvlId === 'chosen' && (<div className="table-container__table-content-add-list">
                                     {
                                         castleLvls.map(lvl => {
                                             const isFavorite = favoriteCastles?.filter(fav => fav === lvl);
@@ -425,8 +394,7 @@ const TableContainer = () => {
                                                 chosen = true;
                                             }
 
-                                            return (<div key={lvl} style={{cursor: 'pointer'}}
-                                                         onClick={() => toggleFavorite(lvl)}>
+                                            return (<div key={lvl} onClick={() => toggleFavorite(lvl)}>
                                                 <AddCastle chosen={chosen}>{lvl}</AddCastle>
                                             </div>)
                                         })
@@ -434,30 +402,16 @@ const TableContainer = () => {
                                 </div>)
                             }
                         </div>
-
-
                         {
-                            error && (<div style={{color: 'whitesmoke'}}>
+                            error && (<div className="text-secondary">
                                 {error}
                             </div>)
                         }
-
-
                     </div>)
                 }
             </div>) : (
-                <div style={{width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <div style={{width: 200}}>
-
-                    </div>
-                    <div style={{
-                        alignSelf: 'start',
-                        marginRight: -17,
-                        width: 200,
-                        display: 'flex',
-                        justifyContent: "space-around"
-                    }}>
-                        <div></div>
+                <div className="table-container--no-table">
+                    <div className="table-container__flags">
                         <Flags eng={eng}/>
                     </div>
                 </div>)}

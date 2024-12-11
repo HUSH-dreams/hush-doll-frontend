@@ -1,0 +1,120 @@
+.table-castle {
+    box-sizing: border-box;
+    position: relative;
+}
+
+.table-castle__main-container, .table-castle__edit-inputs {
+    display: flex;
+    justify-content: space-between;
+    height: 40px;
+    text-align: center;
+    align-items: center;
+}
+
+.table-castle__main-container {
+    margin: 0 0.7rem;
+}
+
+.table-castle__main-container:hover {
+    cursor: pointer;
+}
+
+.table-castle__main-container > span,
+.table-castle__edit-inputs > span,
+.table-castle__edit-header > span {
+    margin: 0 0.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.table-castle__rows--small {
+    width: 80px;
+}
+
+.table-castle__rows--wide {
+    width: 120px;
+}
+
+.table-castle__edit-container {
+    z-index: 10 !important;
+    cursor: default !important;
+    box-shadow: var(--shadow2);
+    margin: 0 0.6rem;
+    padding: 0 0.6rem;
+    position: absolute;
+    top: 0;
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+    transition: bottom ease-in 100ms;
+    border-radius: 5px;
+}
+
+.table-castle__edit-header {
+    border-radius: 5px 5px 0 0;
+    z-index: 3 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--secondary-color);
+    font-weight: bold;
+    width: 100%;
+    text-align: center;
+    transition: all ease-in 100ms;
+}
+
+.table-castle__edit-error {
+    border-radius: 0 0 5px 5px;
+    z-index: 3 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--secondary-color);
+    font-weight: bold;
+    width: 100%;
+    text-align: center;
+    transition: all ease-in 100ms;
+}
+
+.table-castle__edit-input {
+    margin: 0.5rem 0;
+    box-sizing: border-box;
+    color: var(--secondary-color);
+    width: calc(100% - 1rem);
+    padding: 0.5rem;
+    border: 2px solid var(--primary-color);
+    border-radius: 7px;
+}
+
+.table-castle__edit-input:focus {
+    box-shadow: var(--shadow1);
+    background: var(--primary-color) !important;
+    color: var(--brown-color);
+}
+
+.table-castle__edit-input::placeholder {
+    color: var(--brown-color);
+    font-weight: bold;
+}
+
+.table-castle__edit-input:focus::placeholder {
+    color: var(--brown-color);
+}
+
+.table-castle__edit-select {
+    width: calc(100% - 20px);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.table-castle__edit-select::-ms-expand {
+    display: none;
+}
+
+.table-castle__edit-select:hover {
+    box-shadow: var(--shadow1);
+}

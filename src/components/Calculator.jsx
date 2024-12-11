@@ -18,6 +18,20 @@ const Calculator = () => {
     const [thetimeRed, setThetimeRed] = useState('');
     const [thetimeWhite, setThetimeWhite] = useState('');
     const error = useSelector(selectCalculatorError);
+    const url = `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`
+    const calcTime = [
+        ['7:00', '8:00', '8:00', '8:00', '8:00', '8:00', '8:00'],
+        ['7:00', '11:00', '12:30', '12:30', '12:30', '12:30', '12:30'],
+        ['7:00', '11:00', '15:00', '17:00', '17:00', '17:00', '17:00'],
+        ['7:00', '11:00', '15:00', '18:00', '20:00', '20:30', '20:30'],
+        ['7:00', '11:00', '15:00', '18:00', '20:00', '21:00', '23:00'],
+        ['7:00', '11:00', '15:00', '18:00', '20:00', '21:00', '24:00']
+    ]
+
+    const calcRed = ['1:00', '1:30', '2:00', '2:30', '3:00', '3:30']
+
+    const calcLvls = ['15', '30', '45', '60', '75', '90+']
+    const count = [1,2,3,4,5,6];
 
     const validateTime = () => {
         if (time) {
@@ -325,41 +339,32 @@ const Calculator = () => {
     }
 
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-around',
-            background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-            backgroundSize: 'cover',
-            borderRadius: 5,
-            padding: 10,
-            boxShadow: '0 0 10px 5px white'
-        }}>
-            <h3 style={{textAlign: 'center'}}>Filling calculator</h3>
-            <div style={{display: "flex", color: 'whitesmoke', fontWeight: 'bold', textAlign: 'center', marginBottom: 10}}>
-                <div style={{width: 120}}>{texts.time}</div>
-                <div style={{width: 120}}>{texts.level}</div>
-                <div style={{width: 120}}>{texts.level}</div>
-                <div style={{width: 120}}>Action</div>
-                <div style={{width: 120}}>Yellow</div>
-                <div style={{width: 120}}>Red</div>
-                <div style={{width: 120}}>White</div>
-                <div style={{width: 120}}></div>
+        <div style={{background: url, backgroundSize: 'cover'}}
+            className="table-calculator">
+            <h3 className="table-calculator__header">Filling calculator</h3>
+            <div className="table-calculator__calculator-headers">
+                <span>{texts.time}</span>
+                <span>{texts.level}</span>
+                <span>{texts.level}</span>
+                <span>Action</span>
+                <span>Yellow</span>
+                <span>Red</span>
+                <span>White</span>
+                <span></span>
             </div>
-            <div style={{display: "flex", alignItems: 'center', textAlign: 'center', paddingBottom: 20, borderBottom: '2px solid whitesmoke'}}>
-                <div style={{width: 120}}><input style={{
-                    background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) repeat center`,
-                    width: '90%'
-                }} className="castle-input" type="text" value={time}
-                                                 onBlur={() => validateTime()}
-                                                 onClick={() => setTime('')}
-                                                 onChange={e => setTime(e.target.value)}/></div>
-                <div style={{width: 120}}>
-                    <select id="select-castle-lvl" className="castle-input select-clan"
+            <div className="table-calculator__calculator-body">
+                <div>
+                    <input style={{
+                        background: url
+                    }} className="table-castle__edit-input" type="text" value={time}
+                         onBlur={() => validateTime()}
+                         onClick={() => setTime('')}
+                         onChange={e => setTime(e.target.value)}/>
+                </div>
+                <div>
+                    <select id="select-castle-lvl" className="table-castle__edit-input table-castle__edit-select"
                         style={{
-                            background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                            width: '90%',
-                            margin: 'auto'
+                            background: url
                         }}
                             value={level}
                             onChange={e => setLevel(e.target.value)}
@@ -372,24 +377,20 @@ const Calculator = () => {
                         <option value="6">15</option>
                     </select>
                 </div>
-                <div style={{width: 120}}>
+                <div>
                     <input type="text"
-                           style={{background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) repeat center`,
-                               width: '90%'
-                           }}
-                           className="castle-input"
+                           style={{background: url}}
+                           className="table-castle__edit-input"
                            onClick={clearFillingLvl}
                            value={fillingLevel}
                            onChange={e => setFillingLevel(e.target.value)}
                            onBlur={validateFillingLvl}
                     />
                 </div>
-                <div style={{width: 120}}>
-                    <select id="select-castle-lvl" className="castle-input select-clan"
+                <div>
+                    <select id="select-castle-lvl" className="table-castle__edit-input table-castle__edit-select"
                             style={{
                                 background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                                margin: 'auto',
-                                width: '90%'
                             }}
                             value={action}
                             onChange={e => setAction(e.target.value)}
@@ -399,93 +400,38 @@ const Calculator = () => {
                         <option value="3">Покраснел</option>
                     </select>
                 </div>
-                <div style={{width: 120, color: 'rgb(240, 190, 65)', fontWeight: 700}}>{thetimeYellow}</div>
-                <div style={{width: 120, color: 'rgb(186, 71, 50)', fontWeight: 700}}>{thetimeRed}</div>
-                <div style={{width: 120, color: 'rgb(227, 227, 227)', fontWeight: 700}}>{thetimeWhite}</div>
-                <div style={{width: 120}}>
+                <div>{thetimeYellow}</div>
+                <div>{thetimeRed}</div>
+                <div>{thetimeWhite}</div>
+                <div>
                     <Button className="button-hover"
                             onClick={handleCalculate}>{buttons.confirm}</Button>
                 </div>
             </div>
             {error && <CalcError message={error} action={tableCalculatorErrorUnset}/>}
-            <h3 style={{textAlign: 'center'}}>Filling table</h3>
-            <div style={{display: "flex", color: 'whitesmoke', fontWeight: 'bold', textAlign: 'center', marginBottom: 10}}>
-                <div style={{width: 120}}></div>
-                <div style={{width: 120}}>1</div>
-                <div style={{width: 120}}>2</div>
-                <div style={{width: 120}}>3</div>
-                <div style={{width: 120}}>4</div>
-                <div style={{width: 120}}>5</div>
-                <div style={{width: 120}}>6</div>
-                <div style={{width: 120}}>7</div>
-                <div style={{width: 120}}>Red</div>
+            <h3 className="table-calculator__table-header">Filling table</h3>
+            <div className="table-calculator__table-headers">
+                <div></div>
+                <div>1</div>
+                <div>2</div>
+                <div>3</div>
+                <div>4</div>
+                <div>5</div>
+                <div>6</div>
+                <div>7</div>
+                <div>Red</div>
             </div>
-            <div style={{display: "flex", alignItems: 'center', textAlign: 'center', marginBottom: 10}}>
-                <div style={{width: 120, color: 'whitesmoke', fontWeight: 'bold', textAlign: 'center'}}>15</div>
-                <div style={{width: 120}}>7:00</div>
-                <div style={{width: 120}}>8:00</div>
-                <div style={{width: 120}}>8:00</div>
-                <div style={{width: 120}}>8:00</div>
-                <div style={{width: 120}}>8:00</div>
-                <div style={{width: 120}}>8:00</div>
-                <div style={{width: 120}}>8:00</div>
-                <div style={{width: 120, color: 'rgb(186, 71, 50)'}}>1:00</div>
-            </div>
-            <div style={{display: "flex", alignItems: 'center', textAlign: 'center', marginBottom: 10}}>
-                <div style={{width: 120, color: 'whitesmoke', fontWeight: 'bold', textAlign: 'center'}}>30</div>
-                <div style={{width: 120}}>7:00</div>
-                <div style={{width: 120}}>11:00</div>
-                <div style={{width: 120}}>12:30</div>
-                <div style={{width: 120}}>12:30</div>
-                <div style={{width: 120}}>12:30</div>
-                <div style={{width: 120}}>12:30</div>
-                <div style={{width: 120}}>12:30</div>
-                <div style={{width: 120, color: 'rgb(186, 71, 50)'}}>1:30</div>
-            </div>
-            <div style={{display: "flex", alignItems: 'center', textAlign: 'center', marginBottom: 10}}>
-                <div style={{width: 120, color: 'whitesmoke', fontWeight: 'bold', textAlign: 'center'}}>45</div>
-                <div style={{width: 120}}>7:00</div>
-                <div style={{width: 120}}>11:00</div>
-                <div style={{width: 120}}>15:00</div>
-                <div style={{width: 120}}>17:00</div>
-                <div style={{width: 120}}>17:00</div>
-                <div style={{width: 120}}>17:00</div>
-                <div style={{width: 120}}>17:00</div>
-                <div style={{width: 120, color: 'rgb(186, 71, 50)'}}>2:00</div>
-            </div>
-            <div style={{display: "flex", alignItems: 'center', textAlign: 'center', marginBottom: 10}}>
-                <div style={{width: 120, color: 'whitesmoke', fontWeight: 'bold', textAlign: 'center'}}>60</div>
-                <div style={{width: 120}}>7:00</div>
-                <div style={{width: 120}}>11:00</div>
-                <div style={{width: 120}}>15:00</div>
-                <div style={{width: 120}}>18:00</div>
-                <div style={{width: 120}}>20:00</div>
-                <div style={{width: 120}}>20:30</div>
-                <div style={{width: 120}}>20:30</div>
-                <div style={{width: 120, color: 'rgb(186, 71, 50)'}}>2:30</div>
-            </div>
-            <div style={{display: "flex", alignItems: 'center', textAlign: 'center', marginBottom: 10}}>
-                <div style={{width: 120, color: 'whitesmoke', fontWeight: 'bold', textAlign: 'center'}}>75</div>
-                <div style={{width: 120}}>7:00</div>
-                <div style={{width: 120}}>11:00</div>
-                <div style={{width: 120}}>15:00</div>
-                <div style={{width: 120}}>18:00</div>
-                <div style={{width: 120}}>20:00</div>
-                <div style={{width: 120}}>21:00</div>
-                <div style={{width: 120}}>23:00</div>
-                <div style={{width: 120, color: 'rgb(186, 71, 50)'}}>3:00</div>
-            </div>
-            <div style={{display: "flex", alignItems: 'center', textAlign: 'center', marginBottom: 20}}>
-                <div style={{width: 120, color: 'whitesmoke', fontWeight: 'bold', textAlign: 'center'}}>90+</div>
-                <div style={{width: 120}}>7:00</div>
-                <div style={{width: 120}}>11:00</div>
-                <div style={{width: 120}}>15:00</div>
-                <div style={{width: 120}}>18:00</div>
-                <div style={{width: 120}}>20:00</div>
-                <div style={{width: 120}}>21:00</div>
-                <div style={{width: 120}}>24:00</div>
-                <div style={{width: 120, color: 'rgb(186, 71, 50)'}}>3:30</div>
-            </div>
+            {
+                count.map((time, index) => {
+                    return (<div className="table-calculator__table-rows">
+                        <div className="table-calculator__table-rows--bold">{calcLvls[index]}</div>
+                        {calcTime[index].map(thisTime => {
+                            return <div>{thisTime}</div>
+                        })}
+                        <div className="text-red">{calcRed[index]}</div>
+                    </div>)
+                })
+            }
         </div>
     );
 };
