@@ -1,0 +1,228 @@
+.recipe-item {
+    display: flex;
+    align-items: center;
+    /*background-color: transparent;*/
+    border: none;
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding: 0px;
+    overflow: visible;
+    flex-shrink: 0;
+    flex-grow: 0;
+    justify-content: center;
+    position: relative;
+    transition: all 50ms ease-in;
+    z-index: 2;
+}
+
+.recipe-item:hover {
+    z-index: 15;
+}
+
+.recipe-item .slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: max-content;
+    position: relative;
+    min-height: max-content;
+}
+
+.recipe-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: none;
+}
+
+.recipe-item__right-bottom {
+    position: absolute;
+    color: var(--secondary-color);
+    bottom: 1px;
+    right: 3px;
+    font-weight: bold;
+    font-size: var(--large-screen-small);
+    text-shadow: -1px -1px black;
+}
+
+.recipe-item:hover {
+    background-color: white;
+}
+
+@keyframes recipeAppear {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes recipeExit {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.recipe-item__modal {
+    border: 1px solid var(--primary-color);
+    border-radius: 7px;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    color: var(--secondary-color);
+    min-width: max-content;
+    white-space: nowrap;
+    box-shadow: 0 0 7px 10px rgba(0,0,0,0.7);
+
+    opacity: 0; /* Начальное opacity, которое будет анимироваться */
+    transform-origin: bottom center; /* Origin все еще полезен, хотя scale в JS */
+    animation: recipeAppear 120ms ease-out forwards;
+}
+
+.recipe-modal-enter {
+    opacity: 0;
+}
+
+.recipe-modal-enter-active {
+    animation: recipeAppear 80ms ease-out forwards;
+}
+
+.recipe-modal-enter-done {
+    opacity: 1;
+}
+
+.recipe-modal-exit {
+    opacity: 1;
+}
+
+.recipe-modal-exit-active {
+    animation: recipeExit 80ms ease-in forwards;
+}
+
+.recipe-item__modal-header {
+    color: var(--secondary-color);
+    padding: 7px 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.recipe-item__modal-content {
+    background-color: var(--primary-color);
+    padding: 7px;
+    color: var(--brown-color);
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+}
+
+.recipe-item__content-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+}
+
+@keyframes recipe {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0px);
+    }
+}
+
+.recipe > .recipe-item:first-child, .recipe-item-chosen {
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    background-color: rgba(234, 201, 136, 0.4);
+    box-sizing: border-box;
+    box-shadow: none;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.recipes, .recipes .tables--no__h2 {
+    position: relative;
+}
+
+.recipes .tables--no__h2 {
+    width: 100%;
+}
+
+.recipes::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+    width: 100%;
+    height: 20px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.recipes .tables--no__h2::after {
+    content: '';
+    position: absolute;
+    bottom: -21px;
+    right: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+    width: 100%;
+    height: 20px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.recipes .recipe {
+    animation: recipe 100ms forwards ease-in;
+    opacity: 0;
+}
+
+.recipe > .recipe-item:first-child:hover {
+    background-color: rgba(234, 201, 136, 1);
+    border: 1px solid var(--secondary-color);
+}
+
+.recipe-item img {
+    width: auto;
+    height: auto;
+    object-fit: cover;
+    display: block;
+    filter: none;
+}
+
+/* Размеры иконок по умолчанию (для очень широких экранов, >1330px) */
+.recipe-item {
+
+}
+
+/* Для устройств с шириной от 1024px до 1330px */
+@media screen and (min-device-width: 1024px) and (max-device-width: 1630px) {
+
+}
+
+/* Для устройств с шириной до 1023px */
+@media screen and (max-device-width: 1023px) {
+    .recipe > .recipe-item:first-child {
+        margin-right: 6px;
+    }
+
+    @media screen and (max-device-width: 740px) {
+
+    }
+
+    @media screen and (max-device-width: 350px) {
+
+    }
+}
+

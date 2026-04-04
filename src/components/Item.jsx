@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {useEffect, useRef, useState} from 'react';
 import Popover from '@mui/material/Popover';
 import PopUp from './PopUp';
 import '../styles/DollContainer.css';
@@ -61,7 +62,15 @@ import {
     unsetRing2,
     unsetRing3,
     unsetRing4,
-    unsetShield, unsetSlot1, unsetSlot2, unsetSlot3, unsetSlot4, unsetSlot5, unsetSlot6, unsetSlot7, unsetSlot8,
+    unsetShield,
+    unsetSlot1,
+    unsetSlot2,
+    unsetSlot3,
+    unsetSlot4,
+    unsetSlot5,
+    unsetSlot6,
+    unsetSlot7,
+    unsetSlot8,
     unsetWeapon
 } from '../store/doll/actions';
 import {
@@ -69,11 +78,7 @@ import {
     selectAccuracyStats,
     selectAir,
     selectAirStats,
-    selectAmulet,
-    selectBelt,
-    selectBoots,
     selectBracelet1,
-    selectBracelet2,
     selectBuff1,
     selectBuff10,
     selectBuff2,
@@ -84,10 +89,6 @@ import {
     selectBuff7,
     selectBuff8,
     selectBuff9,
-    selectCrystalMA,
-    selectCrystalMD,
-    selectCrystalPA,
-    selectCrystalPD,
     selectDegreeLevel,
     selectDexterity,
     selectDexterityStats,
@@ -97,36 +98,101 @@ import {
     selectEnduranceStats,
     selectFire,
     selectFireStats,
-    selectGloves,
-    selectHelmet,
-    selectJacket,
-    selectPants,
     selectProfession,
     selectRing1,
     selectRing2,
     selectRing3,
-    selectRing4,
-    selectShield,
-    selectSlot1,
-    selectSlot2,
-    selectSlot3,
-    selectSlot4,
-    selectSlot5,
-    selectSlot6,
-    selectSlot7,
-    selectSlot8,
     selectStrength,
     selectStrengthStats,
     selectTitleLevel,
     selectWater,
     selectWaterStats,
-    selectWeapon
 } from '../store/doll/selectors';
 import {useDispatch, useSelector} from 'react-redux';
-import {useEffect, useRef, useState} from "react";
+import '../styles/item.css';
 
 
-const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
+export const setPrefixValues = (item, prefix) => {
+    if (prefix) {
+        if (item.nameEng.includes(prefix.nameEng)) {
+            return true;
+        }
+        const multiply = (number) => {
+            const prefix_additional_stat_multiplier = [0, 1, 2, 3, 5, 7, 9, 12, 15, 18, 23, 28, 34, 37, 42, 48];
+
+            return number * prefix_additional_stat_multiplier[item.level];
+        }
+
+        item.nameEng += ` of ${prefix.nameEng}`;
+        item.nameRu += ` ${prefix.nameRu}`;
+        item.cooldown += item.cooldown * (prefix.additionalCooldown / 100);
+        item.distance += item.distance * (prefix.additionalDistance / 100);
+        item.dmgSpread += prefix.additionalDmgSpread;
+        item.givesStrength += multiply(prefix.additionalGivenStrength);
+        item.givesDexterity += multiply(prefix.additionalGivenDexterity);
+        item.givesAccuracy += multiply(prefix.additionalGivenAccuracy);
+        item.givesEndurance += multiply(prefix.additionalGivenEndurance);
+        item.givesEarth += multiply(prefix.additionalGivenEarth);
+        item.givesAir += multiply(prefix.additionalGivenAir);
+        item.givesWater += multiply(prefix.additionalGivenWater);
+        item.givesFire += multiply(prefix.additionalGivenFire);
+        item.givesHp += multiply(prefix.additionalGivenHP);
+        item.givesPrana += multiply(prefix.additionalGivenPrana);
+        item.givesMa += multiply(prefix.additionalGivenMa);
+        item.givesPa += multiply(prefix.additionalGivenPa);
+        item.givesMd -= multiply(prefix.additionalReducedMD);
+        item.givesPd -= multiply(prefix.additionalReducedPD);
+        item.effectDuration = prefix.effectDuration;
+        item.effectIconName = prefix.effectIconName;
+        item.effectTextEng = prefix.effectTextEng;
+        item.effectTextRu = prefix.effectTextRu;
+        item.avgMd -= multiply(prefix.reducesAvgMd);
+        item.avgPd -= multiply(prefix.reducesAvgPd);
+        item.avgPranaD -= multiply(prefix.reducesAvgPranaDmg);
+
+        if (prefix.nameEng !== 'dragon' && prefix.nameEng !== 'elements' && prefix.nameEng !== 'rule'
+            && prefix.nameEng !== 'vortex' && prefix.nameEng !== 'fetter' && prefix.nameEng !== 'cleansing'
+            && prefix.nameEng !== 'curse'
+        ) {
+            item.reqStrength += multiply(prefix.reqAdditionalStrength);
+            item.reqDexterity += multiply(prefix.reqAdditionalDexterity);
+            item.reqAccuracy += multiply(prefix.reqAdditionalAccuracy);
+            item.reqEndurance += multiply(prefix.reqAdditionalEndurance);
+            item.reqEarth += multiply(prefix.reqAdditionalEarth);
+            item.reqAir += multiply(prefix.reqAdditionalAir);
+            item.reqWater += multiply(prefix.reqAdditionalWater);
+            item.reqFire += multiply(prefix.reqAdditionalFire);
+            item.reqPrana += prefix.reqAdditionalPrana;
+        } else {
+            if (item.reqStrength > 0) {
+                item.reqStrength += multiply(prefix.reqAdditionalStrength);
+            }
+            if (item.reqDexterity > 0) {
+                item.reqDexterity += multiply(prefix.reqAdditionalDexterity);
+            }
+            if (item.reqAccuracy > 0) {
+                item.reqAccuracy += multiply(prefix.reqAdditionalAccuracy);
+            }
+            if (item.reqEndurance > 0) {
+                item.reqEndurance += multiply(prefix.reqAdditionalEndurance);
+            }
+            if (item.reqEarth > 0) {
+                item.reqEarth += multiply(prefix.reqAdditionalEarth);
+            }
+            if (item.reqAir > 0) {
+                item.reqAir += multiply(prefix.reqAdditionalAir);
+            }
+            if (item.reqWater > 0) {
+                item.reqWater += multiply(prefix.reqAdditionalWater);
+            }
+            if (item.reqFire > 0) {
+                item.reqFire += multiply(prefix.reqAdditionalFire);
+            }
+        }
+    }
+}
+
+const Item = ({item, opacity, prefix, dollItem, buff, itemClassName, slotItem, isRing, index}) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const dispatch = useDispatch();
     const titleLevel = useSelector(selectTitleLevel);
@@ -147,21 +213,10 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
     const airStats = useSelector(selectAirStats);
     const waterStats = useSelector(selectWaterStats);
     const fireStats = useSelector(selectFireStats);
-    const helmet = useSelector(selectHelmet);
-    const amulet = useSelector(selectAmulet);
-    const gloves = useSelector(selectGloves);
-    const jacket = useSelector(selectJacket);
-    const shield = useSelector(selectShield);
     const bracelet1 = useSelector(selectBracelet1);
-    const bracelet2 = useSelector(selectBracelet2);
-    const belt = useSelector(selectBelt);
     const ring1 = useSelector(selectRing1);
     const ring2 = useSelector(selectRing2);
     const ring3 = useSelector(selectRing3);
-    const ring4 = useSelector(selectRing4);
-    const pants = useSelector(selectPants);
-    const boots = useSelector(selectBoots);
-    const weapon = useSelector(selectWeapon);
     const profession = useSelector(selectProfession);
     const buff1 = useSelector(selectBuff1);
     const buff2 = useSelector(selectBuff2);
@@ -173,21 +228,18 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
     const buff8 = useSelector(selectBuff8);
     const buff9 = useSelector(selectBuff9);
     const buff10 = useSelector(selectBuff10);
-    const crystalPD = useSelector(selectCrystalPD);
-    const crystalMD = useSelector(selectCrystalMD);
-    const crystalPA = useSelector(selectCrystalPA);
-    const crystalMA = useSelector(selectCrystalMA);
-    const slot1 = useSelector(selectSlot1);
-    const slot2 = useSelector(selectSlot2);
-    const slot3 = useSelector(selectSlot3);
-    const slot4 = useSelector(selectSlot4);
-    const slot5 = useSelector(selectSlot5);
-    const slot6 = useSelector(selectSlot6);
-    const slot7 = useSelector(selectSlot7);
-    const slot8 = useSelector(selectSlot8);
-    const prefix = item.prefix;
-
+    // const prefix = item.prefix;
+    const itemRef = useRef(null);
+    const imageRef = useRef(null);
     const [available, setAvailable] = useState(true);
+
+    if (isRing && prefix) {
+        item.iconName = prefix.ringIconName
+    }
+
+    useEffect(() => {
+        itemRef.current.style.animationDelay = `${index * 30}ms`;
+    }, [])
 
     useEffect(() => {
         setPrefixValues();
@@ -195,84 +247,57 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
         isAvailable();
     })
 
-    const setPrefixValues = () => {
-        if (prefix) {
-            if (item.nameEng.includes(prefix.nameEng)) {
-                return true;
-            }
-            const multiply = (number) => {
-                const prefix_additional_stat_multiplier = [0, 1, 2, 3, 5, 7, 9, 12, 15, 18, 23, 28, 34, 37, 42, 48];
+    const handleMove = (el, func, funcUnset) => {
+        if (!imageRef.current) return;
+        if (!el) return;
 
-                return number * prefix_additional_stat_multiplier[item.level];
-            }
+        const targetDollItem = el.querySelector('.doll-item');
 
-            item.nameEng += ` of ${prefix.nameEng}`;
-            item.nameRu += ` ${prefix.nameRu}`;
-            item.cooldown += item.cooldown * (prefix.additionalCooldown / 100);
-            item.distance += item.distance * (prefix.additionalDistance / 100);
-            item.dmgSpread += prefix.additionalDmgSpread;
-            item.givesStrength += multiply(prefix.additionalGivenStrength);
-            item.givesDexterity += multiply(prefix.additionalGivenDexterity);
-            item.givesAccuracy += multiply(prefix.additionalGivenAccuracy);
-            item.givesEndurance += multiply(prefix.additionalGivenEndurance);
-            item.givesEarth += multiply(prefix.additionalGivenEarth);
-            item.givesAir += multiply(prefix.additionalGivenAir);
-            item.givesWater += multiply(prefix.additionalGivenWater);
-            item.givesFire += multiply(prefix.additionalGivenFire);
-            item.givesHp += multiply(prefix.additionalGivenHP);
-            item.givesPrana += multiply(prefix.additionalGivenPrana);
-            item.givesMa += multiply(prefix.additionalGivenMa);
-            item.givesPa += multiply(prefix.additionalGivenPa);
-            item.givesMd -= multiply(prefix.additionalReducedMD);
-            item.givesPd -= multiply(prefix.additionalReducedPD);
-            item.effectDuration = prefix.effectDuration;
-            item.effectIconName = prefix.effectIconName;
-            item.effectTextEng = prefix.effectTextEng;
-            item.effectTextRu = prefix.effectTextRu;
-            item.avgMd -= multiply(prefix.reducesAvgMd);
-            item.avgPd -= multiply(prefix.reducesAvgPd);
-            item.avgPranaD -= multiply(prefix.reducesAvgPranaDmg);
-            if (prefix.nameEng !== 'dragon' && prefix.nameEng !== 'elements' && prefix.nameEng !== 'rule'
-                && prefix.nameEng !== 'vortex' && prefix.nameEng !== 'fetter' && prefix.nameEng !== 'cleansing'
-                && prefix.nameEng !== 'curse'
-            ) {
-                item.reqStrength += multiply(prefix.reqAdditionalStrength);
-                item.reqDexterity += multiply(prefix.reqAdditionalDexterity);
-                item.reqAccuracy += multiply(prefix.reqAdditionalAccuracy);
-                item.reqEndurance += multiply(prefix.reqAdditionalEndurance);
-                item.reqEarth += multiply(prefix.reqAdditionalEarth);
-                item.reqAir += multiply(prefix.reqAdditionalAir);
-                item.reqWater += multiply(prefix.reqAdditionalWater);
-                item.reqFire += multiply(prefix.reqAdditionalFire);
-                item.reqPrana += prefix.reqAdditionalPrana;
-            } else {
-                if (item.reqStrength > 0) {
-                    item.reqStrength += multiply(prefix.reqAdditionalStrength);
-                }
-                if (item.reqDexterity > 0) {
-                    item.reqDexterity += multiply(prefix.reqAdditionalDexterity);
-                }
-                if (item.reqAccuracy > 0) {
-                    item.reqAccuracy += multiply(prefix.reqAdditionalAccuracy);
-                }
-                if (item.reqEndurance > 0) {
-                    item.reqEndurance += multiply(prefix.reqAdditionalEndurance);
-                }
-                if (item.reqEarth > 0) {
-                    item.reqEarth += multiply(prefix.reqAdditionalEarth);
-                }
-                if (item.reqAir > 0) {
-                    item.reqAir += multiply(prefix.reqAdditionalAir);
-                }
-                if (item.reqWater > 0) {
-                    item.reqWater += multiply(prefix.reqAdditionalWater);
-                }
-                if (item.reqFire > 0) {
-                    item.reqFire += multiply(prefix.reqAdditionalFire);
-                }
+        if (targetDollItem) {
+            targetDollItem.classList.add('doll-item--remove');
+        }
+
+        if (imageRef.current && el) {
+            const from = imageRef.current.getBoundingClientRect();
+            const to = el.getBoundingClientRect();
+
+            let deltaX = (from.left - to.left - 2) * -1;
+            let deltaY = (from.top - to.top - 1) * -1;
+
+            const backgroundContainer = document.querySelector('.background-container');
+
+            if (backgroundContainer) {
+                const newImage = document.createElement('img');
+                newImage.src = item.typeNameEng === 'Powder' || item.typeNameEng === 'Ability' ? `${process.env.REACT_APP_BACKEND_URL}/image/${item.effectIconName}` : `${process.env.REACT_APP_BACKEND_URL}/image/${item.iconName}`;
+
+                newImage.style.position = 'absolute';
+                newImage.style.top = `${from.top}px`;
+                newImage.style.left = `${from.left}px`;
+                newImage.className = 'item-move'
+
+                backgroundContainer.appendChild(newImage);
+
+                setTimeout(() => {
+                    newImage.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                }, 20)
+
+                setTimeout(() => {
+                    dispatch(funcUnset)
+                    dispatch(func)
+                }, 220)
+
+                setTimeout(() => {
+                    backgroundContainer.removeChild(newImage);
+
+                    if (targetDollItem) {
+                        targetDollItem.classList.remove('doll-item--remove');
+                    }
+                }, 400)
             }
         }
     }
+
+    setPrefixValues(item, prefix);
 
     const isAvailable = () => {
         if ((item.reqStrength > 0) && item.reqStrength > (strength + strengthStats)) {
@@ -325,124 +350,165 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
     }
 
     const slotSwitch = () => {
+        let el;
+        let rect;
+
         switch (item.typeNameEng) {
             case 'Helmet':
-                dispatch(setHelmet(makeObjectCopy(item, 'Helmet')));
+                el = document.getElementById("doll-slot__helmet")
+                handleMove(el, setHelmet(makeObjectCopy(item, 'Helmet')), unsetHelmet());
                 break;
             case 'Amulet':
-                dispatch(setAmulet(makeObjectCopy(item, 'Amulet')));
+                el = document.getElementById("doll-slot__amulet")
+                handleMove(el, setAmulet(makeObjectCopy(item, 'Amulet')), unsetAmulet());
                 break;
             case 'Gloves':
-                dispatch(setGloves(makeObjectCopy(item, 'Gloves')));
+                el = document.getElementById("doll-slot__gloves")
+                handleMove(el, setGloves(makeObjectCopy(item, 'Gloves')), unsetGloves());
                 break;
             case 'Cuirass/Robe':
-                dispatch(setJacket(makeObjectCopy(item, 'Jacket')));
+                el = document.getElementById("doll-slot__cuirass")
+                handleMove(el, setJacket(makeObjectCopy(item, 'Jacket')), unsetJacket());
                 break;
             case 'Shield':
-                dispatch(setShield(makeObjectCopy(item, 'Shield')));
+                el = document.getElementById("doll-slot__shield")
+                handleMove(el, setShield(makeObjectCopy(item, 'Shield')), unsetShield());
                 break;
             case 'Bracelet':
                 if (!bracelet1) {
-                    dispatch(setBracelet1(makeObjectCopy(item, 'Bracelet1')));
+                    el = document.getElementById("doll-slot__bracer1")
+                    handleMove(el, setBracelet1(makeObjectCopy(item, 'Bracelet1')), unsetBracelet1());
                 } else {
-                    dispatch(setBracelet2(makeObjectCopy(item, 'Bracelet2')));
+                    el = document.getElementById("doll-slot__bracer2")
+                    handleMove(el, setBracelet2(makeObjectCopy(item, 'Bracelet2')), unsetBracelet2());
                 }
                 break;
             case 'Belt':
-                dispatch(setBelt(makeObjectCopy(item, 'Belt')));
+                el = document.getElementById("doll-slot__belt")
+                handleMove(el, setBelt(makeObjectCopy(item, 'Belt')), unsetBelt());
                 break;
             case 'Ring':
                 if (!ring1) {
-                    dispatch(setRing1(makeObjectCopy(item, 'Ring1')));
+                    el = document.getElementById("doll-slot__ring1")
+                    handleMove(el, setRing1(makeObjectCopy(item, 'Ring1')), unsetRing1());
                 } else if (!ring2) {
-                    dispatch(setRing2(makeObjectCopy(item, 'Ring2')));
+                    el = document.getElementById("doll-slot__ring2")
+                    handleMove(el, setRing2(makeObjectCopy(item, 'Ring2')), unsetRing2());
                 } else if (!ring3) {
-                    dispatch(setRing3(makeObjectCopy(item, 'Ring3')));
+                    el = document.getElementById("doll-slot__ring3")
+                    handleMove(el, setRing3(makeObjectCopy(item, 'Ring3')), unsetRing3());
                 } else {
-                    dispatch(setRing4(makeObjectCopy(item, 'Ring4')));
+                    el = document.getElementById("doll-slot__ring4")
+                    handleMove(el, setRing4(makeObjectCopy(item, 'Ring4')), unsetRing4());
                 }
                 break;
             case 'Pants':
-                dispatch(setPants(makeObjectCopy(item, 'Pants')));
+                el = document.getElementById("doll-slot__pants")
+                handleMove(el, setPants(makeObjectCopy(item, 'Pants')), unsetPants());
                 break;
             case 'Boots':
-                dispatch(setBoots(makeObjectCopy(item, 'Boots')));
+                el = document.getElementById("doll-slot__boots")
+                handleMove(el, setBoots(makeObjectCopy(item, 'Boots')), unsetBoots());
                 break;
             case 'Weapon':
-                dispatch(setWeapon(makeObjectCopy(item, 'Weapon')));
+                el = document.getElementById("doll-slot__weapon")
+                handleMove(el, setWeapon(makeObjectCopy(item, 'Weapon')), unsetWeapon());
                 break;
             case 'Guild':
-                dispatch(setProfession(makeObjectCopy(item, 'Guild')));
+                el = document.getElementById("doll-slot__profession")
+                handleMove(el, setProfession(makeObjectCopy(item, 'Guild')), unsetProfession());
                 break;
             case 'Ability':
             case 'Powder':
             case 'Mantra':
             case 'Flag':
                 if (buff1?.nameEng === item.nameEng && buff1.getType === item.getType) {
-                    dispatch(setBuff1(makeObjectCopy(item, 'Buff1')));
+                    el = document.getElementById("doll-slot__buff1")
+                    handleMove(el, setBuff1(makeObjectCopy(item, 'Buff1')), unsetBuff1());
                     return;
                 }
                 if (buff2?.nameEng === item.nameEng && buff2.getType === item.getType) {
-                    dispatch(setBuff2(makeObjectCopy(item, 'Buff2')));
+                    el = document.getElementById("doll-slot__buff2")
+                    handleMove(el, setBuff2(makeObjectCopy(item, 'Buff2')), unsetBuff2());
                     return;
                 }
                 if (buff3?.nameEng === item.nameEng && buff3.getType === item.getType) {
-                    dispatch(setBuff3(makeObjectCopy(item, 'Buff3')));
+                    el = document.getElementById("doll-slot__buff3")
+                    handleMove(el, setBuff3(makeObjectCopy(item, 'Buff3')), unsetBuff3());
                     return;
                 }
                 if (buff4?.nameEng === item.nameEng && buff4.getType === item.getType) {
-                    dispatch(setBuff4(makeObjectCopy(item, 'Buff4')));
+                    el = document.getElementById("doll-slot__buff4")
+                    handleMove(el, setBuff4(makeObjectCopy(item, 'Buff4')), unsetBuff4());
                     return;
                 }
                 if (buff5?.nameEng === item.nameEng && buff5.getType === item.getType) {
-                    dispatch(setBuff5(makeObjectCopy(item, 'Buff5')));
+                    el = document.getElementById("doll-slot__buff5")
+                    handleMove(el, setBuff5(makeObjectCopy(item, 'Buff5')), unsetBuff5());
                     return;
                 }
                 if (buff6?.nameEng === item.nameEng && buff6.getType === item.getType) {
-                    dispatch(setBuff6(makeObjectCopy(item, 'Buff6')));
+                    el = document.getElementById("doll-slot__buff6")
+                    handleMove(el, setBuff6(makeObjectCopy(item, 'Buff6')), unsetBuff6());
                     return;
                 }
                 if (buff7?.nameEng === item.nameEng && buff7.getType === item.getType) {
-                    dispatch(setBuff7(makeObjectCopy(item, 'Buff7')));
+                    el = document.getElementById("doll-slot__buff7")
+                    handleMove(el, setBuff7(makeObjectCopy(item, 'Buff7')), unsetBuff7());
                     return;
                 }
                 if (buff8?.nameEng === item.nameEng && buff8.getType === item.getType) {
-                    dispatch(setBuff8(makeObjectCopy(item, 'Buff8')));
+                    el = document.getElementById("doll-slot__buff8")
+                    handleMove(el, setBuff8(makeObjectCopy(item, 'Buff8')), unsetBuff8());
                     return;
                 }
                 if (buff9?.nameEng === item.nameEng && buff9.getType === item.getType) {
-                    dispatch(setBuff9(makeObjectCopy(item, 'Buff9')));
+                    el = document.getElementById("doll-slot__buff9")
+                    handleMove(el, setBuff9(makeObjectCopy(item, 'Buff9')), unsetBuff9());
                     return;
                 }
                 if (buff10?.nameEng === item.nameEng && buff10.getType === item.getType) {
-                    dispatch(setBuff10(makeObjectCopy(item, 'Buff10')));
+                    el = document.getElementById("doll-slot__buff10")
+                    handleMove(el, setBuff10(makeObjectCopy(item, 'Buff10')), unsetBuff10());
                     return;
                 }
                 if (item.avgMd > 0 || item.avgPd > 0 || item.avgPranaD > 0) {
-                    dispatch(setWeapon(makeObjectCopy(item, 'Weapon')));
+                    el = document.getElementById("doll-slot__weapon")
+                    handleMove(el, setWeapon(makeObjectCopy(item, 'Weapon')), unsetWeapon());
                     break;
                 }
+
                 if (item.effectIconName) {
                     if (!buff1) {
-                        dispatch(setBuff1(makeObjectCopy(item, 'Buff1')));
+                        el = document.getElementById("doll-slot__buff1")
+                        handleMove(el, setBuff1(makeObjectCopy(item, 'Buff1')), unsetBuff1());
                     } else if (!buff2) {
-                        dispatch(setBuff2(makeObjectCopy(item, 'Buff2')));
+                        el = document.getElementById("doll-slot__buff2")
+                        handleMove(el, setBuff2(makeObjectCopy(item, 'Buff2')), unsetBuff2());
                     } else if (!buff3) {
-                        dispatch(setBuff3(makeObjectCopy(item, 'Buff3')));
+                        el = document.getElementById("doll-slot__buff3")
+                        handleMove(el, setBuff3(makeObjectCopy(item, 'Buff3')), unsetBuff3());
                     } else if (!buff4) {
-                        dispatch(setBuff4(makeObjectCopy(item, 'Buff4')));
+                        el = document.getElementById("doll-slot__buff4")
+                        handleMove(el, setBuff4(makeObjectCopy(item, 'Buff4')), unsetBuff4());
                     } else if (!buff5) {
-                        dispatch(setBuff5(makeObjectCopy(item, 'Buff5')));
+                        el = document.getElementById("doll-slot__buff5")
+                        handleMove(el, setBuff5(makeObjectCopy(item, 'Buff5')), unsetBuff5());
                     } else if (!buff6) {
-                        dispatch(setBuff6(makeObjectCopy(item, 'Buff6')));
+                        el = document.getElementById("doll-slot__buff6")
+                        handleMove(el, setBuff6(makeObjectCopy(item, 'Buff6')), unsetBuff6());
                     } else if (!buff7) {
-                        dispatch(setBuff7(makeObjectCopy(item, 'Buff7')));
+                        el = document.getElementById("doll-slot__buff7")
+                        handleMove(el, setBuff7(makeObjectCopy(item, 'Buff7')), unsetBuff7());
                     } else if (!buff8) {
-                        dispatch(setBuff8(makeObjectCopy(item, 'Buff8')));
+                        el = document.getElementById("doll-slot__buff8")
+                        handleMove(el, setBuff8(makeObjectCopy(item, 'Buff8')), unsetBuff8());
                     } else if (!buff9) {
-                        dispatch(setBuff9(makeObjectCopy(item, 'Buff9')));
+                        el = document.getElementById("doll-slot__buff9")
+                        handleMove(el, setBuff9(makeObjectCopy(item, 'Buff9')), unsetBuff9());
                     } else {
-                        dispatch(setBuff10(makeObjectCopy(item, 'Buff10')));
+                        el = document.getElementById("doll-slot__buff10")
+                        handleMove(el, setBuff10(makeObjectCopy(item, 'Buff10')), unsetBuff10());
                     }
                 }
 
@@ -453,16 +519,22 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
 
                 switch (lastWord) {
                     case 'power':
-                        dispatch(setCrystalPD(makeObjectCopy(item, 'CrystalPD')));
+                        el = document.getElementById("doll-slot__crystalPD")
+                        handleMove(el, setCrystalPD(makeObjectCopy(item, 'CrystalPD')), unsetCrystalPD());
                         break;
                     case 'energy':
-                        dispatch(setCrystalMD(makeObjectCopy(item, 'CrystalMD')));
+                        el = document.getElementById("doll-slot__crystalMD")
+                        handleMove(el, setCrystalMD(makeObjectCopy(item, 'CrystalMD')), unsetCrystalMD());
                         break;
                     case 'stability':
-                        dispatch(setCrystalPA(makeObjectCopy(item, 'CrystalPA')));
+                        el = document.getElementById("doll-slot__crystalPA")
+                        handleMove(el, setCrystalPA(makeObjectCopy(item, 'CrystalPA')), unsetCrystalPA());
                         break;
                     case 'reflection':
-                        dispatch(setCrystalMA(makeObjectCopy(item, 'CrystalMA')));
+                        el = document.getElementById("doll-slot__crystalMA")
+                        handleMove(el, setCrystalMA(makeObjectCopy(item, 'CrystalMA')), unsetCrystalMA());
+                        break;
+                    default:
                         break;
                 }
                 break;
@@ -470,7 +542,9 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
                 break;
         }
     }
-    const handleClick = () => {
+    const handleClick = (e) => {
+        e.stopPropagation()
+
         setAnchorEl(null);
         if (!item.slot) {
             slotSwitch();
@@ -599,7 +673,6 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
         }
     }
 
-
     const useDoubleClick = (delay = 300) => {
         const timePassed = useRef(0);
         return (e) => {
@@ -614,7 +687,7 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
 
             if (e.detail === 2) {
                 timePassed.current = Date.now();
-                handleClick();
+                handleClick(e);
             }
         }
     }
@@ -622,43 +695,30 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
     const myDoubleClickCallback = useDoubleClick();
 
     function drag(e) {
-        const transferitem = JSON.stringify(item);
-        e.dataTransfer.setData("item", transferitem);
+        const transferItem = JSON.stringify(item);
+        e.dataTransfer.setData("item", transferItem);
     }
 
 
     return (
-        <div className={itemClassName} draggable="true" onDragStart={drag} style={{
-            background: !available && ('rgb(115, 5, 5)'),
-            maxHeight: 30,
-            maxWidth: 31,
-            minHeight: 30,
-            minWidth: 31,
-            borderRadius: '2px',
-            margin: '3px 2px'
-        }}>
-            <div style={{
-                maxHeight: 32,
-                maxWidth: 32,
-                minHeight: 32,
-                minWidth: 32,
-                borderRadius: '2px',
-                opacity: opacity,
-                margin: '-1px 0 0 0',
-                cursor: 'pointer'
-
-            }}
-                 aria-owns={open ? 'mouse-over-popover' : undefined}
-                 aria-haspopup="true"
-                 onMouseEnter={handlePopoverOpen}
-                 onMouseLeave={handlePopoverClose}
-                 onClick={slotItem ? myDoubleClickCallback : handleClick}
-                 onMouseDown={() => setAnchorEl(null)}
+        <div className={`item ${itemClassName}`} draggable="true" onDragStart={drag} ref={itemRef}>
+            {!available && <div className={`${dollItem || slotItem ? "item-red" : "item-red not-slot"}`}></div>}
+            <div
+                className="item__inner"
+                style={{opacity: opacity}}
+                id="over"
+                aria-owns={open ? 'mouse-over-popover' : undefined}
+                aria-haspopup="true"
+                onMouseEnter={handlePopoverOpen}
+                onMouseLeave={handlePopoverClose}
+                onClick={e => slotItem ? myDoubleClickCallback(e) : handleClick(e)}
+                onMouseDown={() => setAnchorEl(null)}
+                onContextMenu={event => event.preventDefault()}
             >
                 <div>
-                    {buff ?
-                        (<img src={`${process.env.REACT_APP_BACKEND_URL}/image/${item.effectIconName}`} alt=""/>)
-                        : (<img src={`${process.env.REACT_APP_BACKEND_URL}/image/${item.iconName}`} alt=""/>)
+                    {
+                        buff ? (<img src={`${process.env.REACT_APP_BACKEND_URL}/image/${item.effectIconName}`} alt="" ref={imageRef}/>)
+                            : (<img src={`${process.env.REACT_APP_BACKEND_URL}/image/${item.iconName}`} alt="" ref={imageRef}/>)
                     }
                 </div>
             </div>
@@ -681,7 +741,7 @@ const Item = ({item, opacity, dollItem, buff, itemClassName, slotItem}) => {
                 onClose={handlePopoverClose}
                 disableRestoreFocus
             >
-                <PopUp item={item} />
+                <PopUp item={item}/>
             </Popover>
         </div>
     )

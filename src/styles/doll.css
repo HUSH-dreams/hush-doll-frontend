@@ -1,0 +1,322 @@
+@keyframes doll {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0px);
+    }
+}
+
+.doll {
+    margin: 0 auto 0.5rem auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    box-shadow: 0 0 7px -1px var(--primary-color);
+    width: 96%;
+    border-radius: 7px;
+    padding: 5px 8px;
+    box-sizing: border-box;
+    gap: 10px;
+    transition: all 100ms ease-in;
+    animation: doll 100ms forwards ease-in;
+    transform: translateX(-20px);
+    opacity: 0;
+}
+
+.doll:hover {
+    box-shadow: var(--shadow1);
+}
+
+.doll__left {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: calc(85% - 5px);
+}
+
+.doll__left.default {
+    width: 100%;
+}
+
+.doll__right {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: calc(15% - 5px);
+}
+
+.doll__right button {
+    color: whitesmoke !important;
+}
+
+.doll__left div {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    height: 30px;
+}
+
+.doll__left span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--secondary-color);
+}
+
+.doll__profession-image {
+    width: 24px;
+    height: 24px;
+}
+
+.doll--popup {
+    width: 96%;
+    position: absolute;
+    top: 110px;
+    right: 2%;
+    z-index: 10;
+    box-shadow: var(--shadow1);
+    border-radius: 5px;
+    border: 5px solid rgb(36,33,29);
+    box-sizing: border-box;
+}
+
+.doll--owner__header {
+    padding: 10px;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
+    font-weight: bold;
+    box-sizing: border-box;
+}
+
+.doll--owner__body {
+    background-color: var(--primary-color);
+    color: var(--brown-color);
+    padding: 16px;
+    border-radius: 0 0 5px 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.doll--owner__name-input {
+    padding: 8px;
+    border: 2px solid var(--brown-color);
+    border-radius: 5px;
+    margin: 16px 0;
+    background-color: inherit;
+    transition: all 100ms ease-in;
+}
+
+.doll--owner__name-input::placeholder {
+    color: var(--brown-color);
+}
+
+.doll--owner__name-input:hover {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+    box-shadow: var(--shadow1);
+    background-color: var(--brown-color);
+}
+
+.doll--owner__new-name {
+    margin-bottom: 1rem;
+}
+
+.doll--owner__new-name b {
+    color: var(--secondary-color);
+}
+
+.doll--popup__copy {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    box-sizing: border-box;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.doll--owner__bottom {
+    display: flex;
+    overflow: hidden;
+    justify-content: space-around;
+    flex-direction: column;
+    margin: 16px 0;
+}
+
+.doll--owner__privacy {
+    margin: 0 auto;
+}
+
+.doll--owner__actions {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.doll--owner__doll-name {
+    margin-bottom: 0.7rem;
+}
+
+.doll--owner__doll-name b {
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+.doll--not-owner__header {
+    padding: 6px;
+    border-radius: 5px 5px 0 0;
+    color: var(--secondary-color);
+    display: flex;
+    justify-content: space-around;
+}
+
+.doll--owner__body .button {
+    background-color: var(--brown-color);
+    color: var(--secondary-color) !important;
+    width: max-content;
+    margin: 0 auto;
+    padding: 10px 16px !important;
+}
+
+@media screen and (min-device-width: 1024px) and (max-device-width: 1630px) {
+    .doll {
+        margin: 0 auto 0.4rem auto;
+        border-radius: 5px;
+        gap: 6px;
+        font-size: var(--medium-screen-large);
+        box-sizing: border-box;
+    }
+
+    .doll--popup {
+        font-size: var(--medium-screen-large);
+        top: 120px;
+    }
+
+    .doll--owner__name-input {
+        padding: 4px;
+        margin: 8px auto;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .doll--owner__name-input::placeholder {
+        font-size: var(--medium-screen-large);
+    }
+
+    .copy-link {
+        font-size: var(--medium-screen-large);
+        padding: 4px !important;
+    }
+
+    .doll--owner__bottom {
+        margin: 8px auto;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .doll--owner__actions button {
+        padding: 0;
+    }
+
+    .doll--owner__header {
+        padding: 4px 8px 8px 8px;
+    }
+
+    .doll--owner__body {
+        padding: 10px;
+    }
+
+    .doll--owner__body .button {
+        padding: 5px 8px !important;
+    }
+
+    .doll--popup__copy {
+        margin-bottom: 8px;
+    }
+}
+
+@media screen and (max-device-width: 1023px) {
+    .doll {
+        padding: 3px 6px;
+        margin-bottom: 0.3rem;
+        font-size: var(--small-screen-extra-large);
+    }
+
+    .doll__left {
+        width: calc(90% - 5px);
+    }
+
+    .doll__left > div {
+        height: 24px;
+    }
+
+    .doll__left > div > img {
+        height: 100%;
+    }
+
+    .doll__right {
+        width: 30px;
+    }
+
+    .doll__right button {
+        padding: 0;
+        scale: 1 1;
+    }
+
+    .doll--popup {
+        width: 70%;
+        top: 90px;
+        right: 15%;
+        box-shadow: var(--shadow2);
+        border-width: 3px;
+        font-size: var(--small-screen-extra-large);
+    }
+
+    .doll--popup * {
+        font-size: var(--small-screen-text);
+    }
+
+    .doll--owner__header {
+       padding: calc(0.4rem - 3px) 0 0.4rem 0;
+    }
+
+    .doll--owner__body {
+        padding: 0.5rem 0.6rem;
+        align-items: center;
+    }
+
+    .doll--owner__body .button {
+        height: 26px;
+    }
+
+    .doll--owner__name-input {
+        margin: 0.3rem 0;
+        padding: 0.2rem;
+        width: 90%;
+    }
+
+    .doll--owner__name-input::placeholder {
+        font-size: var(--small-screen-extra-large) !important;
+    }
+
+    .doll--owner__body label {
+        font-weight: bold;
+    }
+
+    .doll--owner__bottom {
+        margin: 0.3rem 0;
+        width: 94%;
+    }
+
+    .doll--owner__privacy button {
+        font-size: var(--small-screen-large) !important;
+    }
+}

@@ -1,4 +1,3 @@
-import React from "react";
 import {
     DOLL_CLEAR,
     DOLL_DECREASE_ACCURACY,
@@ -146,14 +145,22 @@ import {
     DOLLS_START,
     DOLL_SET_TITLE_GREATNESS,
     DOLL_SET_DEGREE_GREATNESS,
-    DOLL_SET_PREFIXES, DOLL_SET_OTHER_DOLL, DOLL_UNSET_OTHER_DOLL, DOLL_SUCCESS, DOLL_START, DOLL_ERROR
+    DOLL_SET_PREFIXES,
+    DOLL_SET_OTHER_DOLL,
+    DOLL_UNSET_OTHER_DOLL,
+    DOLL_SUCCESS,
+    DOLL_START,
+    DOLL_ERROR,
+    DOLL_SET_DOLL_NAME,
+    DOLL_LOGOUT, DOLL_DETAILS_ERROR, DOLL_SELECT_SUCCESS, DOLL_DETAILS_SUCCESS, DOLL_DETAILS_START, DOLL_UNSET_DOLL_NAME
 } from './actions';
 
 const initialState = {
     dolls: [],
-    doll: null,
-    dollError: null,
     otherDolls: [],
+    defaultDolls: [],
+    doll: '',
+    dollError: null,
     dollItems: [],
     saveError: null,
     dollsError: null,
@@ -239,7 +246,18 @@ const initialState = {
     reqProfession: null,
     reqProfessionLevel: 0,
     prefixes: [],
-    otherDoll: null
+    otherDoll: null,
+    dollName: '',
+    dollDetailsLoading: false
+}
+
+const setSlot = (item, string) => {
+    if (item) {
+        item.slot = string; // Добавляем свойство 'slot' к предмету
+        return item;
+    } else {
+        return null;
+    }
 }
 
 const dollReducer = (state = initialState, action) => {
@@ -253,12 +271,12 @@ const dollReducer = (state = initialState, action) => {
                 dollsLoading: true
             }
         case DOLLS_SUCCESS:
-            
             return {
                 ...state,
                 currentUser: action.payload.user,
                 dolls: action.payload.dolls,
                 otherDolls: action.payload.shared,
+                defaultDolls: action.payload.default,
                 dollsLoading: false
             }
         case DOLLS_ERROR:
@@ -1162,6 +1180,17 @@ const dollReducer = (state = initialState, action) => {
                 ...state,
                 otherDoll: null
             }
+        case DOLL_SET_DOLL_NAME:
+            return {
+                ...state,
+                dollName: action.payload
+            }
+
+        case DOLL_UNSET_DOLL_NAME:
+            return {
+                ...state,
+                dollName: ''
+            }
 
         case DOLL_CLEAR:
             
@@ -1207,6 +1236,115 @@ const dollReducer = (state = initialState, action) => {
                 slot8: null,
                 slot9: null,
                 slot10: null
+            }
+        case DOLL_LOGOUT:
+            return {
+                ...state,
+                dolls: [],
+                doll: '',
+                dollError: null,
+                otherDolls: []
+            }
+        case DOLL_DETAILS_START:
+            return {
+                ...state,
+                dollDetailsLoading: true,
+                dollDetailsError: null,
+                selectedDollDetails: null // Очищаем предыдущие детали при начале загрузки
+            }
+        case DOLL_DETAILS_SUCCESS:
+            const chosenDoll = action.payload;
+
+            const processItem = (item, prefixValue, slotName) => {
+                if (item) {
+                    const processedItem = { ...item };
+
+                    if (prefixValue !== undefined) {
+                        processedItem.prefix = prefixValue;
+                    }
+
+                    processedItem.slot = slotName;
+
+                    return processedItem;
+                }
+                return null;
+            };
+
+            return {
+                ...state,
+                dollDetailsLoading: false,
+                dollDetailsError: null,
+                selectedDollDetails: action.payload, // selectedDollDetails может хранить "сырой" payload, если хотите
+                dollName: chosenDoll.name,
+                strength: chosenDoll.strength,
+                dexterity: chosenDoll.dexterity,
+                accuracy: chosenDoll.accuracy,
+                endurance: chosenDoll.endurance,
+                earth: chosenDoll.earth,
+                air: chosenDoll.air,
+                water: chosenDoll.water,
+                fire: chosenDoll.fire,
+                titleLevel: chosenDoll.titleLevel,
+                degreeLevel: chosenDoll.degreeLevel,
+                titleGreatness: String(chosenDoll.titleGreatness), // Приводим к строке
+                degreeGreatness: String(chosenDoll.degreeGreatness), // Приводим к строке
+                profession: setSlot(chosenDoll.professionItem, 'Guild'), // Предполагая, что professionItem это guild
+
+                // Обработка предметов со слотами и префиксами
+                helmet: processItem(chosenDoll.helmet, chosenDoll.helmetPrefix, 'Helmet'),
+                amulet: processItem(chosenDoll.amulet, chosenDoll.amuletPrefix, 'Amulet'),
+                gloves: processItem(chosenDoll.gloves, chosenDoll.glovesPrefix, 'Gloves'),
+                jacket: processItem(chosenDoll.chest, chosenDoll.chestPrefix, 'Jacket'), // 'chest' в API, 'jacket' в state
+                shield: processItem(chosenDoll.shield, chosenDoll.shieldPrefix, 'Shield'),
+                bracelet1: processItem(chosenDoll.bracer1, chosenDoll.bracer1Prefix, 'Bracelet1'),
+                bracelet2: processItem(chosenDoll.bracer2, chosenDoll.bracer2Prefix, 'Bracelet2'),
+                belt: processItem(chosenDoll.belt, chosenDoll.beltPrefix, 'Belt'),
+                ring1: processItem(chosenDoll.ring1, chosenDoll.ring1Prefix, 'Ring1'),
+                ring2: processItem(chosenDoll.ring2, chosenDoll.ring2Prefix, 'Ring2'),
+                ring3: processItem(chosenDoll.ring3, chosenDoll.ring3Prefix, 'Ring3'),
+                ring4: processItem(chosenDoll.ring4, chosenDoll.ring4Prefix, 'Ring4'),
+                pants: processItem(chosenDoll.pants, chosenDoll.pantsPrefix, 'Pants'),
+                boots: processItem(chosenDoll.boots, chosenDoll.bootsPrefix, 'Boots'),
+                weapon: processItem(chosenDoll.weapon, chosenDoll.weaponPrefix, 'Weapon'),
+
+                // Дополнительные слоты
+                slot1: processItem(chosenDoll.additional_slot1, chosenDoll.additional_slot1Prefix, 'Slot1'),
+                slot2: processItem(chosenDoll.additional_slot2, chosenDoll.additional_slot2Prefix, 'Slot2'),
+                slot3: processItem(chosenDoll.additional_slot3, chosenDoll.additional_slot3Prefix, 'Slot3'),
+                slot4: processItem(chosenDoll.additional_slot4, chosenDoll.additional_slot4Prefix, 'Slot4'),
+                slot5: processItem(chosenDoll.additional_slot5, chosenDoll.additional_slot5Prefix, 'Slot5'),
+                slot6: processItem(chosenDoll.additional_slot6, chosenDoll.additional_slot6Prefix, 'Slot6'),
+                slot7: processItem(chosenDoll.additional_slot7, chosenDoll.additional_slot7Prefix, 'Slot7'),
+                slot8: processItem(chosenDoll.additional_slot8, chosenDoll.additional_slot8Prefix, 'Slot8'),
+
+                // Баффы (предполагаем, что у них нет префиксов)
+                buff1: setSlot(chosenDoll.buff1, 'Buff1'),
+                buff2: setSlot(chosenDoll.buff2, 'Buff2'),
+                buff3: setSlot(chosenDoll.buff3, 'Buff3'),
+                buff4: setSlot(chosenDoll.buff4, 'Buff4'),
+                buff5: setSlot(chosenDoll.buff5, 'Buff5'),
+                buff6: setSlot(chosenDoll.buff6, 'Buff6'),
+                buff7: setSlot(chosenDoll.buff7, 'Buff7'),
+                buff8: setSlot(chosenDoll.buff8, 'Buff8'),
+                buff9: setSlot(chosenDoll.buff9, 'Buff9'),
+                buff10: setSlot(chosenDoll.buff10, 'Buff10'),
+
+                // Кристаллы (предполагаем, что у них нет префиксов)
+                crystalpd: setSlot(chosenDoll.crystalPd, 'CrystalPD'),
+                crystalmd: setSlot(chosenDoll.crystalMd, 'CrystalMD'),
+                crystalpa: setSlot(chosenDoll.crystalPa, 'CrystalPA'),
+                crystalma: setSlot(chosenDoll.crystalMa, 'CrystalMA'),
+            };
+        case DOLL_DETAILS_ERROR:
+            return {
+                ...state,
+                dollDetailsLoading: false,
+                dollDetailsError: action.payload
+            }
+        case DOLL_SELECT_SUCCESS:
+            return {
+                ...state,
+                selectedDollDetails: action.payload
             }
 
         default:

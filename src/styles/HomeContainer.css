@@ -1,0 +1,373 @@
+.home-container {
+    flex-grow: 1; /* Разрешаем этому блоку занимать всё оставшееся пространство */
+    flex-shrink: 0.8; /* Разрешаем ему сжиматься, если необходимо */
+    flex-basis: var(--table-container-width);
+    height: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.home-container__body {
+    padding: 15px;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.home-container__body::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    background-color: rgba(234, 201, 136, 0.25);
+}
+
+.home-container__body::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+}
+
+.home-container__body::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+    background-color: rgb(234, 201, 136);
+    cursor: pointer;
+}
+
+.home-container__body::-webkit-scrollbar-thumb:hover {
+    background-color: white;
+}
+
+.home-container__body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) rgba(234, 201, 136, 0.25);
+}
+
+.home-container__title {
+    font-size: var(--large-screen-extra-large);
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.home-container__text .home-container__title, .home-container__change-list .home-container__title {
+    border-bottom: 1px solid var(--secondary-color);
+    border-top: 1px solid var(--secondary-color);
+    padding: 6px 0;
+    margin-bottom: 20px;
+}
+
+.home-container__text-row {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 8px;
+}
+
+.home-container__text-column {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: end;
+    margin-top: 10px;
+}
+
+.home-container__text-row.center {
+    align-items: center;
+}
+
+.home-container__subtitle {
+    font-size: var(--large-screen-large);
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.home-container__online-container {
+    align-items: start;
+    justify-content: start;
+    display: flex;
+    width: max-content;
+    min-width: 200px;
+    flex-direction: column;
+}
+
+.home-container__change-list {
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.home-container__change-body {
+    overflow-y: auto;
+    box-sizing: border-box;
+    flex-grow: 1;
+    max-height: 280px;
+    border-radius: 5px;
+    border: 1px solid var(--primary-color);
+    padding: 10px;
+    background-color: rgba(234, 201, 136, 0.1);
+}
+
+.home-container__change-body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) rgba(234, 201, 136, 0.25);
+}
+
+.home-container__change-body::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    background-color: rgba(234, 201, 136, 0.25);
+}
+
+.home-container__change-body::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+}
+
+.home-container__change-body::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+    background-color: rgb(234, 201, 136);
+    cursor: pointer;
+}
+
+.home-container__change-body::-webkit-scrollbar-thumb:hover {
+    background-color: white;
+}
+
+.home-container__date-separator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.home-container__date-line {
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background-color: var(--secondary-color);
+    opacity: 0.7;
+}
+
+.home-container__date {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.home-container__change-text {
+    position: relative;
+    margin-bottom: 8px;
+    display: flex; /* Для лучшего выравнивания текста */
+    align-items: start;
+    flex-direction: column;
+}
+
+.home-container__change-text-row {
+    position: relative;
+    padding-left: 25px; /* Отступ для кружка */
+}
+
+.home-container__change-text-row::before {
+    content: ''; /* Пустое содержимое, так как это будет форма */
+    width: 5px; /* Ширина кружка */
+    height: 5px; /* Высота кружка */
+    background-color: var(--secondary-color); /* Цвет кружка */
+    border-radius: 50%; /* Делает квадрат кругом */
+    position: absolute;
+    left: 10px;
+    top: 12px;
+    transform: translateY(-50%);
+    margin-right: 10px; /* Отступ между кружком и текстом */
+}
+
+.home-container__footer {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+    box-sizing: border-box;
+}
+
+.home-container__footer > div:last-child > div {
+    gap: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.home-container__footer > div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.home-container__footer .online-container {
+    align-items: center;
+    justify-content: end;
+}
+
+.home-container__footer .online-users-container {
+    min-width: max-content;
+}
+
+.home-container__change-section {
+    margin: 5px 0;
+}
+
+.home-container__version {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+@media screen and (min-device-width: 1024px) and (max-device-width: 1630px) {
+    .home-container {
+        font-size: var(--medium-screen-large);
+        border-bottom: 0;
+    }
+
+    .home-container__change-body {
+        padding: 9px;
+    }
+
+    .home-container__change-body::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    .home-container__change-body::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+        border-radius: 10px;
+    }
+
+    .home-container__change-body::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
+    }
+}
+
+@media screen and (max-device-width: 1023px) {
+    .home-container {
+        flex-basis: 100dvw;
+        min-width: 100dvw;
+        max-width: 100dvw;
+        min-height: 0;
+        max-height: 100%;
+        scroll-snap-align: center;
+        font-size: var(--small-screen-extra-large);
+        overflow-y: auto;
+        border: none;
+    }
+
+    .home-container__body::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+        background-color: rgba(234, 201, 136, 0.25);
+    }
+
+    .home-container__body::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+        border-radius: 8px;
+    }
+
+    .home-container__body::-webkit-scrollbar-thumb {
+        border-radius: 8px;
+        -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
+        background-color: rgb(234, 201, 136);
+        cursor: pointer;
+    }
+
+    .home-container__body::-webkit-scrollbar-thumb:hover {
+        background-color: white;
+    }
+
+    .home-container__body {
+        padding: 15px 10px;
+    }
+
+    .home-container__title {
+        font-size: var(--large-screen-large);
+        display: block;
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    .home-container__text-row, .home-container__text-column {
+        font-size: var(--small-screen-extra-large);
+    }
+
+    .home-container__text-row {
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .home-container__subtitle {
+        font-size: var(--small-screen-large);
+    }
+
+    .home-container__text .home-container__title {
+        border-bottom: 1px solid var(--secondary-color);
+        border-top: 1px solid var(--secondary-color);
+        padding: 6px 0;
+        margin-bottom: 10px;
+    }
+
+    .home-container__footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .home-container__footer > div:last-child {
+        gap: 5px;
+    }
+
+    .home-container__change-body {
+        padding: 7px;
+    }
+
+    .home-container__change-body::-webkit-scrollbar {
+        width: 3px;
+        height: 3px;
+    }
+
+    .home-container__change-body::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+        border-radius: 8px;
+    }
+
+    .home-container__change-body::-webkit-scrollbar-thumb {
+        border-radius: 8px;
+        -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
+    }
+
+    .home-container__change-text-row {
+        padding-left: 12px;
+    }
+
+    .home-container__date-separator {
+        margin-bottom: 5px;
+    }
+
+    .home-container__change-text-row::before {
+        content: ''; /* Пустое содержимое, так как это будет форма */
+        width: 5px; /* Ширина кружка */
+        height: 5px; /* Высота кружка */
+        background-color: var(--secondary-color); /* Цвет кружка */
+        border-radius: 50%; /* Делает квадрат кругом */
+        position: absolute;
+        left: 0;
+        top: 8px;
+        transform: translateY(-50%);
+        margin-right: 10px; /* Отступ между кружком и текстом */
+    }
+}

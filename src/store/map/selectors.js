@@ -1,0 +1,1 @@
+export const selectChosenMapTypes = state => state.map.chosen;

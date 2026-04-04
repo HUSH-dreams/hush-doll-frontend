@@ -38,6 +38,7 @@ export const itemsInitiate = (type) => {
         try {
             const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/items?item-type=` + type);
             const data = await response.json();
+
             if (!data.success) {
                 dispatch(itemsError(data.reason))
             } else {

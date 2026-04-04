@@ -1,0 +1,205 @@
+.dolls__menu {
+    display: flex;
+    justify-content: space-evenly;
+    border-bottom: 1px solid var(--primary-color);
+    width: 100%;
+    margin-top: 1px;
+    border-top: 1px solid var(--primary-color);
+    height: 28px;
+    box-sizing: border-box;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.dolls__menu::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: calc(100% + 1px);
+    height: 15px;
+    z-index: 99;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+}
+
+@keyframes defaultAppear {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.default-dolls {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: max-content;
+    border-right: 1px solid var(--primary-color);
+    padding: 10px 0;
+    box-sizing: border-box;
+    opacity: 0;
+    animation: defaultAppear 500ms ease-out forwards;
+}
+
+.default-dolls_img-container {
+    padding: 3px;
+    box-sizing: border-box;
+    border-top: 1px solid rgba(0,0,0,0);
+    border-bottom: 1px solid rgba(0,0,0,0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.default-dolls_img-container.selected {
+    background-color: rgba(234, 201, 136, 0.25);
+    border-top: 1px solid var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.dolls__default-dolls {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+.default-dolls__separator {
+    min-height: 2px;
+    background-color: var(--secondary-color);
+}
+
+.dolls__selected-doll {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 35px;
+    min-height: 35px;
+    font-weight: bold;
+    box-sizing: border-box;
+    max-width: 100%;
+
+    flex-grow: 0;
+    flex-shrink: 1;
+
+    padding: 0 5px;
+    margin: 0 auto;
+}
+
+.dolls__selected-doll span {
+    white-space: nowrap;   /* Запрещаем перенос текста */
+    overflow: hidden;      /* Обрезаем то, что не помещается */
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.dolls__list {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.dolls__list .pagination {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.dolls--no-list {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-direction: column;
+    height: max-content;
+    padding: 10px;
+    width: 100%;
+}
+
+.dolls--no-list__text {
+    text-align: center;
+    color: var(--secondary-color);
+}
+
+.dolls__dolls-container {
+    padding: 15px 0 10px 0;
+    box-sizing: border-box;
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+@media screen and (min-device-width: 1024px) and (max-device-width: 1630px) {
+    .dolls__selected-doll {
+        font-size: var(--medium-screen-large);
+        min-height: 30px;
+        max-height: 30px;
+        flex-basis: 30px;
+        flex-shrink: 0;
+    }
+
+    .dolls--no-list {
+        font-size: var(--medium-screen-large);
+    }
+
+    .default-dolls__separator {
+        min-height: 1px;
+    }
+
+    .default-dolls_img-container {
+        padding: 0;
+    }
+}
+
+@media screen and (max-device-width: 1023px) {
+    .dolls__menu {
+        padding-bottom: 0;
+        width: 100%;
+        min-height: 26px;
+        max-height: 26px;
+    }
+
+    .dolls__list {
+        position: relative;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .dolls__default-dolls {
+        overflow-y: hidden;
+    }
+
+    .default-dolls {
+        overflow: auto;
+    }
+
+    .dolls__dolls-container {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .dolls__selected-doll {
+        min-height: 26px;
+        max-height: 26px;
+        font-size: var(--small-screen-extra-large);
+    }
+
+    .default-dolls__separator {
+        min-height: 1px;
+    }
+
+    .default-dolls_img-container {
+        padding: 1px;
+    }
+
+    .dolls--no-list {
+        font-size: var(--small-screen-extra-large);
+    }
+}

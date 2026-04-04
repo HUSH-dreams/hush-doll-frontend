@@ -1,11 +1,13 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import '../styles/table-castle.css'
 import Button from "@mui/material/Button";
-import {useDispatch, useSelector} from "react-redux";
+import {useDispatch} from "react-redux";
 import {tableCastleSaveInitiate} from "../store/table/actions";
-import {selectButtons, selectSelects, selectTexts} from "../store/lang/selectors";
+import {useLang} from "../use/lang";
+import {toRoman} from "../utils/romanNumerals";
+import {addNewNotification} from "../store/error/actions";
 
-const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => {
+const TableCastle = ({token, currentTime, tableId, table, clans, castle, eng, underline, index, isSmall, isChosen}) => {
     const [isMouseOver, setIsMouseOver] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
     const initialSpheretime = castle.fillingSpheretime;
@@ -17,10 +19,8 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
     const [fillingDateValue, setFillingDateValue] = useState('1');
     const [commentary, setCommentary] = useState(castle.commentary);
     const url = `url(${process.env.REACT_APP_BACKEND_URL}/image/background) repeat center`
-
-    const buttons = useSelector(selectButtons);
-    const texts = useSelector(selectTexts);
-    const selects = useSelector(selectSelects);
+    const {buttons, texts, selects} = useLang();
+    const tableCastleRef = useRef(null)
 
     let fillingHours = '';
     let fillingMinutes = '';
@@ -39,6 +39,12 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
     let thetimeRed;
     let status;
     let statusBgr;
+    let wasFilled;
+    let showStatus;
+
+    useEffect(() => {
+        tableCastleRef.current.style.animationDelay = `${index * 50 + 300}ms`;
+    }, [])
 
     function dateDiffInDays(a, b) {
         const _MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -218,32 +224,47 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
             statusBgr = 'rgb(227, 227, 227)';
         }
 
-        let difference = dateDiffInDays(dateToday, dateOfFilling);
+        showStatus = texts[status]
 
-        switch (difference) {
-            case -2:
-                fillingDay = selects.twoDaysAgo;
-                break;
-            case -1:
-                fillingDay = selects.yesterday;
-                break;
-            case 0:
-                fillingDay = selects.today;
-                break;
-            case 1:
-                fillingDay = selects.tomorrow;
-                break;
-            default:
-                fillingDay = selects.earlier;
-                thisSpheretime = null;
-                statusBgr = null;
-                currentClan = null;
-                break;
-        }
+        // const fillDay = new Date(fillingTime);
+        // fillDay.setHours(fillingHours)
+        // fillDay.setMinutes(fillingMinutes)
+        // console.log(fillDay);
+
+        fillingDay = fillingTime.getDate() + ' ' + texts.months[Number(fillingTime.getMonth())].toLowerCase().substring(0, 3);
+
+
+        // let difference = dateDiffInDays(dateToday, dateOfFilling);
+
+        // switch (difference) {
+        //     case -2:
+        //         fillingDay = selects.twoDaysAgo;
+        //         break;
+        //     case -1:
+        //         fillingDay = selects.yesterday;
+        //         break;
+        //     case 0:
+        //         fillingDay = selects.today;
+        //         break;
+        //     case 1:
+        //         fillingDay = selects.tomorrow;
+        //         break;
+        //     default:
+        //         fillingDay = selects.earlier;
+        //         thisSpheretime = null;
+        //         statusBgr = null;
+        //         currentClan = null;
+        //         break;
+        // }
     }
+
+    let wasFilledTime;
 
     if (castle.fillingDatetime) {
         const fillingTime = new Date(Number(castle.fillingDatetime));
+
+        wasFilled = fillingTime.getDate() + ' ' + texts.months[Number(fillingTime.getMonth())].toLowerCase().substring(0, 3);
+        wasFilledTime = fillingTime.getHours().toString().padStart(2, "0") + ':' + fillingTime.getMinutes().toString().padStart(2, "0")
 
         let month = fillingTime.getUTCMonth() + 1;
         let year = fillingTime.getUTCFullYear();
@@ -264,9 +285,9 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
         dateToday = new Date(`${year}-${pMonth}-${pDay}`);
 
         dateToFill = fillingTime.getDate();
-        lastUpdateUsername = table.users.filter(user => user.userId === castle.lastChangeUser)[0];
+        lastUpdateUsername = table.users?.filter(user => user.userId === castle.lastChangeUser)[0];
 
-        currentClan = table.clans.filter(clan => clan.id === castle.ownerClan)[0];
+        currentClan = table.clans?.filter(clan => clan.id === castle.ownerClan)[0];
         thisSpheretime = castle.fillingSpheretime;
 
         getFillingTime(fillingTime);
@@ -274,9 +295,29 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
 
     const [time, setTime] = useState(thetime);
 
+    const formatTime = (timestamp) => {
+        if (!timestamp) return '';
+        const date = new Date(Number(timestamp));
+        return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+    };
+
+    useEffect(() => {
+        // Если замок изменился (например, через WebSocket), сбросить локальное состояние
+        setSpheretime(castle.fillingSpheretime);
+        setFillingLvl(castle.fillingLvl);
+        setClan(castle.ownerClan ? castle.ownerClan : clans[0]?.id); // Убедитесь, что clans[0]?.id всегда валиден
+        setCommentary(castle.commentary);
+        setTime(formatTime(castle.fillingDatetime)); // Сбрасываем время
+
+        if (isEdit) {
+            setIsEdit(false);
+            setError('');
+        }
+    }, [castle.id, // Использовать ID для однозначности
+        castle.fillingDatetime, castle.fillingLvl, castle.fillingSpheretime, castle.ownerClan, castle.commentary, clans]);
+
     const dispatch = useDispatch();
 
-    //date regex: \b\d{2}(\.|\s|:)\d{2}\b
     const setMouseOver = () => {
         if (!isMouseOver) {
             setIsMouseOver(true);
@@ -290,7 +331,22 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
     }
 
     const handleClick = () => {
+        if (clans?.length < 1) {
+            dispatch(addNewNotification('Сначала нужно добавить хотя бы один клан в список.' + ' Это можно сделать во вкладке "Кланы" слева на экране'))
+
+            return;
+        }
+
+        if (isSmall) {
+            return;
+        }
+
+        if (!isEdit) {
+            setTime(`${new Date().getHours().toString().padStart(2, "0")}:${new Date().getMinutes().toString().padStart(2, "0")}`);
+        }
+
         isEdit ? setIsEdit(false) : setIsEdit(true);
+
         setError('');
     }
 
@@ -367,6 +423,8 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
                     }
                 }
             }
+        } else {
+            setSpheretime(castle.fillingSpheretime)
         }
     }
 
@@ -418,6 +476,10 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
         setFillingDateValue(thisDateId);
     }
 
+    const selectTime = (e) => {
+        e.target.select();
+    }
+
     const handleConfirm = () => {
         let today;
 
@@ -456,7 +518,8 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
             fillingSpheretime: spheretime,
             ownerClan: clan,
             commentary: commentary,
-            tableId: tableId
+            tableId: tableId,
+            castle: castle.nameRu
         };
 
         dispatch(tableCastleSaveInitiate(token, saveCastle));
@@ -464,68 +527,88 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
         handleClick();
     }
 
-    return (<div
-        onMouseEnter={setMouseOver}
-        onMouseLeave={setMouseAway}
-        style={{borderTop: underline && '2px solid whitesmoke'}}
-        className="table-castle"
-    >
-        <div className="modal" style={{display: isEdit ? 'block' : 'none'}} onClick={handleClick}>
-        </div>
-        <div className="table-castle__main-container" onClick={handleClick} style={{
-            background: isMouseOver && url,
-            borderRadius: !isEdit ? 5 : (error ? 0 : '0 0 5px 5px'),
-            boxShadow: isMouseOver && !isEdit && '0 0 10px 2px white'
-        }}>
-            <span className="table-castle__rows--small">{castle.lvl}</span>
-            <span className="table-castle__rows--wide">{eng ? castle.nameEng : castle.nameRu}</span>
-            <span className="table-castle__rows--small"><b className="text-secondary">{thetime}</b></span>
-            <span className="table-castle__rows--wide">{fillingDay}</span>
-            <span className="table-castle__rows--small">{thetimeRed}</span>
-            <span className="table-castle__rows--small">{thisSpheretime}</span>
-            <span className="table-castle__rows--small">{castle.fillingLvl}</span>
-            <span className="table-castle__rows--small" style={{backgroundColor: statusBgr}}>&nbsp;</span>
-            <span className="table-castle__rows--wide">{currentClan?.name}</span>
-            <span className="table-castle__rows--wide">{castle.commentary}</span>
-            <span className="table-castle__rows--wide">{lastUpdateUsername?.nickname}</span>
-        </div>
-        {isEdit && <div className="table-castle__edit-container" style={{
-            background: url,
+    return (<>
+        {isEdit && <div className="modal castle-modal" onClick={handleClick}></div>}
+        <div
 
-        }}>
-            <div className="table-castle__edit-header" style={{
-                height: isEdit ? 40 : 0
-            }}>
-                <span className="table-castle__rows--small">{texts.level}</span>
-                <span className="table-castle__rows--wide">{texts.name}</span>
-                <span className="table-castle__rows--small">{texts.time}</span>
-                <span className="table-castle__rows--wide">{texts.fillDate}</span>
-                <span className="table-castle__rows--small">{texts.fillingLevel}</span>
-                <span className="table-castle__rows--small">{texts.sphereTime}</span>
-                <span className="table-castle__rows--wide">{texts.clan}</span>
-                <span className="table-castle__rows--wide">{texts.commentary}</span>
-                <span className="table-castle__rows--wide"></span>
-            </div>
-            <div className="table-castle__edit-inputs"
+            style={{borderTop: underline && '2px solid whitesmoke'}}
+            className={isEdit ? "table-castle table-castle__edit" : "table-castle"}
+            ref={tableCastleRef}
+        >
+            <div className="table-castle__main-container"
+                 onClick={handleClick}
+                 onMouseEnter={setMouseOver}
+                 onMouseLeave={setMouseAway}
                  style={{
-                     background: url
-                 }}>
-                <span className="table-castle__rows--small">{castle.lvl}</span>
-                <span className="table-castle__rows--wide">{eng ? castle.nameEng : castle.nameRu}</span>
-                <span className="table-castle__rows--small">
+                background: isMouseOver && url,
+                borderRadius: !isEdit ? 5 : (error ? 0 : '0 0 5px 5px'),
+                boxShadow: isMouseOver && !isEdit && '0 0 10px 2px white'
+            }}>
+                <div className="table-castle__rows--super-wide castle-name">
+                    {!isSmall && <span className="table-castle__rows--super-small to-bold">{castle.lvl}</span>}
+                    <div className="table-castle__rows--super-small table-castle__rows--status"
+                         style={{backgroundColor: statusBgr, color: statusBgr}}>
+                    </div>
+                    <span className="table-castle__rows--normal to-bold">{eng ? castle.nameEng : castle.nameRu}</span>
+
+                </div>
+                <div className="table-castle__rows--wide table-castle__rows--time">
+                    {thetime && <>
+                        <span><b className="text-secondary">{thetime}</b></span>
+                        <span>&nbsp;&nbsp;</span>
+                        <span>{fillingDay}</span>
+                    </>}
+                </div>
+                {!isSmall && <span className="table-castle__rows--super-small to-bold">{thisSpheretime}</span>}
+                <span className="table-castle__rows--super-small to-bold text-red">{thetimeRed}</span>
+                {!isSmall && <span className="table-castle__rows--super-wide to-bold time" style={{
+                    display: 'flex', justifyContent: 'space-between', width: '100%'
+                }}>
+                {wasFilled && <>
+                    <span className="text-blue bold">{wasFilledTime}</span>
+                    <span>&nbsp;</span>
+                    <span>{wasFilled}</span>
+                    <span>&nbsp;</span>
+                    <span>{toRoman(castle.fillingLvl)}</span>
+                </>}
+            </span>}
+
+                <span className={`table-castle__rows--small to-bold ${isChosen ? 'clan chosen' : 'clan not-chosen'}`}>{currentClan?.name}</span>
+                {!isSmall && <span
+                    className="table-castle__rows--normal to-bold commentary">{lastUpdateUsername?.nickname}</span>}
+                {!isSmall && <span className="table-castle__rows--super-wide commentary">{castle.commentary}</span>}
+            </div>
+            {isEdit && <div className="table-castle__edit-container" style={{background: url}}>
+                <div className="table-castle__edit-header" style={{height: isEdit ? 0 : 'auto'}}>
+                    <span className="table-castle__rows--super-small"></span>
+                    <span className="table-castle__rows--normal">{texts.name}</span>
+                    <span className="table-castle__rows--normal">{texts.time}</span>
+                    <span className="table-castle__rows--wide">{texts.fillDate}</span>
+                    <span className="table-castle__rows--small">{texts.fillingLevel}</span>
+                    <span className="table-castle__rows--normal">{texts.sphereTime}</span>
+                    <span className="table-castle__rows--super-wide">{texts.clan}</span>
+                    <span className="table-castle__rows--super-wide">{texts.commentary}</span>
+                    <span className="table-castle__rows--wide"></span>
+                </div>
+                <div className="table-castle__edit-inputs">
+                    <span className="table-castle__rows--super-small"></span>
+                    <span className="table-castle__rows--normal">{eng ? castle.nameEng : castle.nameRu}</span>
+                    <span className="table-castle__rows--normal">
                     <input
                         style={{background: url}}
-                        className="table-castle__edit-input"
+                        className="input"
                         type="text"
                         value={time}
                         onClick={clearTime}
+                        onFocus={selectTime}
                         onChange={e => setTime(e.target.value)}
                         onBlur={validateTime}
                         autoFocus
+                        placeholder={time}
                     />
                 </span>
-                <span className="table-castle__rows--wide">
-                    <select id="select-date" className="table-castle__edit-input table-castle__edit-select"
+                    <span className="table-castle__rows--wide">
+                    <select id="select-date" className="select castle outlined"
                             style={{
                                 background: url
                             }}
@@ -537,27 +620,27 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
                         <option value="3">{selects.twoDaysAgo}</option>
                     </select>
                 </span>
-                <span className="table-castle__rows--small">
+                    <span className="table-castle__rows--small">
                     <input type="text"
                            style={{background: url}}
-                           className="table-castle__edit-input"
+                           className="input"
                            value={fillingLvl}
                            onClick={clearFillingLvl}
                            onChange={e => setFillingLvl(e.target.value)}
                            onBlur={validateFillingLvl}
                     />
                 </span>
-                <span className="table-castle__rows--small">
+                    <span className="table-castle__rows--normal">
                     <input
-                    style={{background: url}}
-                    className="table-castle__edit-input" type="text"
-                    value={spheretime}
-                    onClick={clearSpheretime}
-                    onChange={e => setSpheretime(e.target.value)}
-                    onBlur={validateSpheretime}
-                /></span>
-                <span className="table-castle__rows--wide">
-                    <select id="table-castle__edit-select" className="table-castle__edit-input table-castle__edit-select"
+                        style={{background: url}}
+                        className="input" type="text"
+                        value={spheretime}
+                        onClick={clearSpheretime}
+                        onChange={e => setSpheretime(e.target.value)}
+                        onBlur={validateSpheretime}
+                    /></span>
+                    <span className="table-castle__rows--super-wide">
+                    <select id="select" className="select castle outlined"
                             style={{
                                 background: url
                             }}
@@ -567,26 +650,25 @@ const TableCastle = ({token, tableId, table, clans, castle, eng, underline}) => 
                         {clans.map(clan => (<option value={clan.id} key={clan.id}>{clan.name}</option>))}
                     </select>
                 </span>
-                <span className="table-castle__rows--wide">
+                    <span className="table-castle__rows--super-wide">
                     <input style={{
-                        background: url,
-                        width: 'calc(100% - 20px)'
-                    }} className="table-castle__edit-input" type="text" value={commentary} onClick={clearCommentary}
+                        background: url, width: 'calc(100% - 20px)'
+                    }} className="input" type="text" value={commentary} onClick={clearCommentary}
                            onChange={e => setCommentary(e.target.value)}/>
                 </span>
-                <span className="table-castle__rows--wide">
-                    <Button className="button-hover"
+                    <span className="table-castle__rows--wide">
+                    <Button className="button dark"
                             onClick={handleConfirm}>{buttons.confirm}</Button>
                 </span>
-            </div>
-            <div className="table-castle__edit-error" style={{
-                height: error ? 40 : 0,
-                background: url
-            }}>
-                {error}
-            </div>
-        </div>}
-    </div>);
+                </div>
+                <div className="table-castle__edit-error" style={{
+                    height: error ? 40 : 0, background: url
+                }}>
+                    {error}
+                </div>
+            </div>}
+        </div>
+    </>);
 };
 
 export default TableCastle;

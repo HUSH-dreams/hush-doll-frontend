@@ -84,5 +84,8 @@ export const selectReqFire = state => state.doll.reqFire;
 export const selectPrefixes = state => state.doll.prefixes;
 export const selectOtherDoll = state => state.doll.otherDoll;
 export const selectOtherDolls = state => state.doll.otherDolls;
+export const selectDefaultDolls = state => state.doll.defaultDolls;
 export const selectDoll = state => state.doll.doll;
 export const selectDollError = state => state.doll.dollError;
+export const selectDollName = state => state.doll.dollName;
+export const selectDollDetailsLoading = state => state.doll.dollDetailsLoading;

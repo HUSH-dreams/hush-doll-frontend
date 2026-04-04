@@ -1,0 +1,673 @@
+.map-container {
+    flex-grow: 1;
+    flex-shrink: 0.8; /* Позволяет контейнеру немного сжиматься */
+    flex-basis: var(--table-container-width); /* Начальная ширина */
+    height: 100%; /* Занимает всю доступную высоту родителя */
+    min-width: 0;
+    overflow: hidden; /* Обрезает содержимое, если выходит за границы */
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.map-container__header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 0.6rem;
+    box-sizing: border-box;
+    font-size: var(--large-screen-large);
+    font-weight: bold;
+    color: var(--primary-color);
+    position: relative;
+
+    min-height: 35px;
+    max-height: 35px;
+    flex-basis: 35px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--primary-color);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    box-shadow: 0 5px 5px 7px rgba(0,0,0,0.7);
+    z-index: 10;
+}
+
+.map-container__menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.map-container__header div {
+    height: 100%;
+    width: 100%;
+}
+
+.map-container__header div:nth-child(2) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.map-container__header div .content {
+    height: 100%;
+}
+
+@keyframes mapAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes iconAppear {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0.97;
+    }
+}
+
+.map-image--world-part img {
+    opacity: 0;
+    animation: mapAppear 300ms forwards ease-in;
+}
+
+.map-icons-overlay {
+    z-index: 12;
+}
+
+.map-element {
+    opacity: 0;
+    animation: mapAppear 300ms forwards ease-in;
+    height: 20px;
+    width: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    transition: transform 0.1s ease-out, z-index 0s step-end;
+}
+
+.map-element:hover {
+    z-index: 1001 !important;
+}
+
+.map-image {
+    opacity: 0;
+    animation: mapAppear 500ms forwards ease-in;
+}
+
+.map-container__icon-modal {
+    z-index: 100; /* Модальное окно всегда будет выше своей иконки внутри map-element */
+    box-sizing: border-box;
+    display: none; /* По умолчанию скрыто */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-width: 400px;
+    min-width: 150px;
+    overflow: hidden;
+    animation: iconAppear 100ms forwards ease-in;
+    position: absolute;
+    bottom: 20px;
+    pointer-events: none;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-bottom: 7px;
+    color: var(--primary-color);
+    font-size: var(--large-screen-medium);
+    text-shadow: -1px -1px 0 #000,  /* Слева-сверху */
+    1px -1px 0 #000,  /* Справа-сверху */
+    -1px  1px 0 #000,  /* Слева-снизу */
+    1px  1px 1px #000;
+}
+
+.map-container__icon-modal::after {
+    content: '';
+    position: absolute;
+    bottom: 2px; /* Половина высоты треугольника + 2px для перекрытия границы */
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 4px solid transparent; /* Ширина основания треугольника */
+    border-right: 4px solid transparent; /* Ширина основания треугольника */
+    border-top: 10px solid var(--primary-color); /* Высота и цвет треугольника (цвет фона модалки) */
+    z-index: 101; /* Должен быть выше модального окна */
+    pointer-events: none; /* Треугольник не должен перехватывать события мыши */
+}
+
+.map-container__icon-modal::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent; /* Чуть шире, чем основной треугольник */
+    border-right: 5px solid transparent; /* Чуть шире, чем основной треугольник */
+    border-top: 11px solid black; /* Цвет границы модалки */
+    z-index: 100; /* Под основным треугольником, но над модалкой */
+    pointer-events: none;
+}
+
+.map-element:hover .map-container__icon-modal {
+    padding-bottom: unset;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: var(--primary-color);
+    display: flex !important;
+    box-sizing: border-box;
+    color: var(--brown-color);
+    text-shadow: -1px -1px 0 rgba(0,0,0,0),
+    1px -1px 0 rgba(0,0,0,0),
+    -1px  1px 0 rgba(0,0,0,0),
+    1px  1px 1px rgba(0,0,0,0);
+    box-shadow: 0 0 2px 2px var(--secondary-color);
+}
+
+.map-element:hover .map-container__icon-modal-header {
+    color: black;
+    display: flex !important;
+}
+
+.map-element:hover .map-container__icon-modal-text {
+    display: flex !important;
+}
+
+.map-element:hover .map-container__icon-modal::before, .map-element:hover .map-container__icon-modal::after {
+    display: none;
+}
+
+.map-container__icon-modal-header {
+    font-weight: bold;
+    padding: 3px 5px;
+    box-sizing: border-box;
+    width: 100%;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.map-container__icon-modal-text {
+    padding: 3px 5px;
+    box-sizing: border-box;
+    color: var(--brown-color);
+    z-index: 999;
+}
+
+.map-container__content {
+    flex-grow: 1;   /* Занимает всю оставшуюся высоту в map-container */
+    flex-shrink: 1; /* Позволяет контейнеру сжиматься */
+    min-height: 0;  /* Важно для Flex-элементов, чтобы они могли сжиматься */
+    position: relative; /* Контекст для map-wrapper, если это нужно */
+    overflow: hidden; /* Обрезает содержимое, если выходит за границы */
+    padding: 15px;
+
+    display: flex;          /* ВАЖНО: Делает этот контейнер flex-контейнером */
+    justify-content: center; /* Центрирует map-wrapper по горизонтали */
+    align-items: center;   /* Центрирует map-wrapper по вертикали */
+}
+
+.map-container__ref {
+    position: absolute;
+    right: 0;
+    height: 1px;
+    top: 0;
+    width: 1px;
+}
+
+.map-wrapper {
+    position: relative; /* Контекст позиционирования для .map-element (иконок) */
+    display: flex;      /* ВАЖНО: Делает его flex-контейнером для img */
+    justify-content: center; /* Центрирует img внутри map-wrapper (если img меньше wrapper) */
+    align-items: center;   /* Центрирует img внутри map-wrapper */
+
+    /* Эти свойства заставляют map-wrapper подстроиться под map-image,
+       но не выйти за пределы map-container__content */
+    max-width: 100%;
+    max-height: 100%;
+
+    /* Важный момент: если map-wrapper сам является flex-элементом
+       и вы видите, что он сжимается слишком сильно, можно попробовать: */
+    /* flex-shrink: 0; */ /* Если он сам является flex-элементом и его сжимает */
+    /* width: auto; height: auto; */ /* Убедитесь, что нет фиксированных размеров */
+}
+
+.map-image {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.map-image--world-part {
+    position: absolute;
+    opacity: 0;
+    transform: scale(0.9);
+    animation: mapAppear 300ms ease-out forwards;
+}
+
+.hyperion-map {
+    filter: drop-shadow(0 0 10px rgba(0, 168, 243, 0.5));
+}
+
+.charon-map {
+    filter: drop-shadow(0 0 10px rgba(255, 0, 6, 0.3));
+}
+
+.phoebus-map {
+    filter: drop-shadow(0 0 10px rgba(255, 165, 39, 0.5));
+}
+
+.rhodes-map {
+    filter: drop-shadow(0 0 10px rgba(32, 150, 38, 0.5));
+}
+
+.leon-map {
+    filter: drop-shadow(0 0 10px rgba(234, 201, 136, 0.7));
+}
+
+.choice-map {
+    filter: drop-shadow(0 0 10px rgba(98, 89, 201, 0.8));
+}
+
+@keyframes mapNameAppear {
+    0% {
+        opacity: 0;
+        filter: blur(5px);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0px);
+    }
+}
+
+.map-container__world-name {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    letter-spacing: 10px;
+    font-weight: bold;
+    transition: opacity 200ms ease-in, transform 4000ms ease-out, filter 500ms ease-out;
+    opacity: 0;
+    filter: blur(5px);
+    text-shadow: -1px -1px 0 #000,
+    1px -1px 0 #000,  /* Справа-сверху */
+    -1px  1px 0 #000,  /* Слева-снизу */
+    3px  3px 3px #000;
+    animation: mapNameAppear 700ms ease-out forwards;
+}
+
+.map-container__world-name.over {
+    opacity: 1;
+    transform: scaleX(1.5) scaleY(1.3);
+}
+
+.map-container__world-name.hyper {
+    top: 23%;
+    bottom: 1%;
+    right: 1%;
+    left: 53%;
+    color: rgb(0, 168, 243);
+}
+
+.map-container__world-name.charon {
+    top: 0.8%;
+    bottom: 60%;
+    right: 10%;
+    left: 8%;
+    color: rgb(255, 0, 6);
+}
+
+.map-container__world-name.phoebus {
+    top: 40%;
+    bottom: 28%;
+    right: 48%;
+    left: 15%;
+    color: rgb(255, 165, 39);
+}
+
+.map-container__world-name.rhodes {
+    top: 50%;
+    bottom: 1%;
+    right: 65%;
+    left: 1%;
+    color: rgb(32, 150, 38);
+}
+
+.map-container__world-name.leon {
+    top: 73%;
+    bottom: 13%;
+    left: 32%;
+    right: 47%;
+    color: var(--primary-color);
+}
+
+.map-container__world-name.choice {
+    top: 0;
+    bottom: 83%;
+    left: 83%;
+    right: -7%;
+    color: rgb(98, 89, 201);
+}
+
+
+.map-image--world-part img {
+    transition: filter 500ms ease-in, transform 800ms ease-out;
+}
+
+.map-image--world-part .map-image--world-part-over {
+    filter: drop-shadow(0 0 15px rgba(240, 240, 240, 1));
+    transform: scale(1.04);
+}
+
+.map-image--world-hyper {
+    right: 1%;
+    bottom: 1%;
+    top: 13%;
+    left: 53.2%;
+}
+
+.map-image--world-charon {
+    top: 0.5%;
+    bottom: 55.6%;
+    left: 8%;
+    right: 10%;
+}
+
+.map-image--world-phoebus {
+    top: 36.5%;
+    bottom: 26.3%;
+    left: 13.7%;
+    right: 47%;
+}
+
+.map-image--world-rhodes {
+    top: 35%;
+    bottom: 1.7%;
+    left: 0.7%;
+    right: 64.5%;
+}
+
+.map-image--world-leon {
+    top: 73%;
+    bottom: 13%;
+    left: 36%;
+    right: 52%;
+}
+
+.map-image--world-choice {
+    top: 2%;
+    bottom: 83%;
+    left: 90%;
+    right: -2%;
+}
+
+.map-image--world-part img {
+    object-fit: fill;
+    height: 100%;
+    width: 100%;
+}
+
+.map-element {
+    cursor: pointer;
+}
+
+.map-element__icon {
+    display: block;
+    image-rendering: pixelated;
+    transition: transform 0.1s ease-out;
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+}
+
+.map-element--city .map-element__icon {
+    max-height: 16px;
+}
+
+.map-element:hover .map-element__icon {
+    transform: scale(1.2);
+}
+
+.map-container__chosen {
+    width: 100%;
+    max-width: 100%;
+    height: max-content;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    border-top: 1px solid var(--primary-color);
+    box-shadow: 0 -5px 7px 5px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    z-index: 10;
+    box-sizing: border-box;
+    flex-direction: row;
+}
+
+.map-container__chosen-icons {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1px;
+    border-left: 1px solid var(--primary-color);
+    border-right: 1px solid var(--primary-color);
+}
+
+.map-container__chosen-button {
+    flex-shrink: 0;
+    flex-grow: 1;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.map-container__chosen-button .button {
+    width: 100%;
+    height: 100%;
+    max-height: unset;
+}
+
+.map-container__chosen-type {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-container__chosen-type.chosen {
+    background-color: var(--primary-color);
+}
+
+.map-container__chosen-type img {
+    max-height: 16px;
+    max-width: 16px;
+    image-rendering: pixelated;
+}
+
+.map-container__world {
+    position: absolute;
+    z-index: 1;
+}
+
+.map-container__map--charon1 {
+    top: 1%;
+    left: 8.4%;
+    right: 10.5%;
+    bottom: 78%;
+}
+.map-container__map--charon2 {
+    top: 22%;
+    left: 8.4%;
+    right: 20%;
+    bottom: 71%;
+}
+.map-container__map--charon3 {
+    top: 29%;
+    left: 10%;
+    right: 38%;
+    bottom: 62%;
+}
+.map-container__map--charon4 {
+    top: 38%;
+    left: 38.6%;
+    right: 47%;
+    bottom: 56%;
+}
+.map-container__map--rhodes1 {
+    top: 35%;
+    left: 0.8%;
+    right: 85%;
+    bottom: 2%;
+}
+.map-container__map--rhodes2 {
+    top: 72.5%;
+    left: 15%;
+    right: 65%;
+    bottom: 2%;
+}
+.map-container__map--rhodes3 {
+    top: 66%;
+    left: 15%;
+    right: 82%;
+    bottom: 27.5%;
+}
+.map-container__map--phoebus1 {
+    top: 38%;
+    left: 15%;
+    right: 61.4%;
+    bottom: 34%;
+}
+.map-container__map--phoebus2 {
+    top: 66%;
+    left: 18%;
+    right: 47%;
+    bottom: 27.5%;
+}
+.map-container__map--phoebus3 {
+    top: 44%;
+    left: 38.6%;
+    right: 47%;
+    bottom: 34%;
+}
+.map-container__map--hyperion1 {
+    top: 38%;
+    left: 53%;
+    right: 1%;
+    bottom: 1%;
+}
+.map-container__map--hyperion2 {
+    top: 29%;
+    left: 62%;
+    right: 1%;
+    bottom: 62%;
+}
+.map-container__map--hyperion3 {
+    top: 22%;
+    left: 80%;
+    right: 1%;
+    bottom: 71%;
+}
+.map-container__map--hyperion4 {
+    top: 13%;
+    left: 89.5%;
+    right: 3%;
+    bottom: 78%;
+}
+
+.map-container__map--leon1 {
+    top: 73%;
+    bottom: 13%;
+    left: 36%;
+    right: 52%;
+}
+
+.map-container__map--choice1 {
+    top: 2%;
+    bottom: 88%;
+    left: 90%;
+    right: -2%;
+}
+
+.map-container__map--choice2 {
+    top: 12%;
+    bottom: 83%;
+    left: 95%;
+    right: -2%;
+}
+
+
+@media screen and (min-device-width: 1024px) and (max-device-width: 1630px) {
+    .map-container {
+        border-bottom: 0;
+        border-right: 0;
+    }
+
+    .map-container__chosen-type {
+        width: 30px;
+        height: 30px;
+    }
+
+    .map-container__world-name {
+        font-size: var(--medium-screen-extra-large);
+    }
+
+    .map-container__header {
+        max-height: 27px;
+        min-height: 27px;
+        flex-basis: 27px;
+    }
+}
+
+@media screen and (max-device-width: 1023px) {
+    .map-container {
+        scroll-snap-align: start;
+        min-width: 100dvw;
+        max-width: 100dvw;
+        border-bottom: 0;
+        border-right: 0;
+    }
+
+    .map-element__icon {
+        max-height: 14px;
+        max-width: 14px;
+    }
+
+    .map-container__header {
+        font-size: var(--small-screen-extra-large);
+        min-height: 37px;
+        max-height: 37px;
+        flex-basis: 37px;
+        border-radius: 0;
+    }
+
+    .map-container__chosen-type {
+        width: 20px;
+        height: 20px;
+    }
+
+    .map-container__world-name {
+        font-size: var(--small-screen-extra-large);
+    }
+
+    .map-container__world-name.over {
+        transform: scale(1.1);
+    }
+
+    .map-image--world-part .map-image--world-part-over {
+        transform: scale(1);
+    }
+}

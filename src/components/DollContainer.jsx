@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {loginError} from '../store/user/actions';
+import '../styles/doll-container.css';
 import {
     selectAccuracy,
     selectAccuracyStats,
@@ -30,6 +31,8 @@ import {
     selectDegreeStats,
     selectDexterity,
     selectDexterityStats,
+    selectDollDetailsLoading,
+    selectDollName,
     selectDolls,
     selectEarth,
     selectEarthStats,
@@ -80,7 +83,7 @@ import {
     selectWaterStats,
     selectWeapon
 } from '../store/doll/selectors';
-import {selectButtons, selectInputs, selectLang, selectSelects, selectTexts} from "../store/lang/selectors";
+import {selectLang} from "../store/lang/selectors";
 import {
     decreaseAccuracy,
     decreaseAir,
@@ -153,14 +156,25 @@ import Stat from "./Stat";
 import Popover from "@mui/material/Popover";
 import Button from "@mui/material/Button";
 import {useNavigate} from "react-router-dom";
+import {useLang} from "../use/lang";
+import {itemsInitiate} from "../store/items/actions";
+import {useIsSmall} from "../use/IsSmall";
+import {addError} from "../store/error/actions";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
+import {scroll} from "../utils/scrollIntoView";
+import CustomLink from "./CustomLink";
 
-const DollContainer = () => {
+const DollContainer = ({isUtils = false, setStats = null, handleLeftItems = null, unsetLeft = null}) => {
     const [dollNameExists, setDollNameExists] = useState(false);
     const [dollName, setDollName] = useState('');
     const [display, setDisplay] = useState('none');
     const [dollNameError, setDollNameError] = useState(null);
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [name, setName] = useState('');
+    const dollDetailsLoading = useSelector(selectDollDetailsLoading)
+    const dollContainerRef = useRef(null);
+    const [loaded, setLoaded] = useState(false);
 
     const dolls = useSelector(selectDolls);
     const token = useSelector(selectToken);
@@ -241,14 +255,12 @@ const DollContainer = () => {
     const reqFire = useSelector(selectReqFire);
     const titleGreatness = useSelector(selectTitleGreatness);
     const degreeGreatness = useSelector(selectDegreeGreatness);
-    const inputs = useSelector(selectInputs);
-    const buttons = useSelector(selectButtons);
-    const selects = useSelector(selectSelects);
     const eng = useSelector(selectLang);
-    const texts = useSelector(selectTexts);
-
+    const {texts, selects, buttons, inputs} = useLang()
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [isSmall] = useIsSmall();
+    const selectedName = useSelector(selectDollName);
 
     const handlePopoverOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -1038,6 +1050,7 @@ const DollContainer = () => {
     const open = Boolean(anchorEl);
 
     useEffect(() => {
+        setLoaded(false)
         countStats();
         let sumStrength = 0;
         let sumDexterity = 0;
@@ -1733,7 +1746,18 @@ const DollContainer = () => {
         dispatch(setRequireAir(highReqAir));
         dispatch(setRequireWater(highReqWater));
         dispatch(setRequireFire(highReqFire));
+        setLoaded(true);
     })
+
+    useEffect(() => {
+        if (dollContainerRef) {
+            scroll(dollContainerRef, 'instant')
+        }
+    }, [dollContainerRef])
+
+    useEffect(() => {
+        scroll(dollContainerRef)
+    }, [selectedName])
 
     const title = titleStats - (strength + dexterity + accuracy + endurance);
     const degree = degreeStats - (earth + air + water + fire);
@@ -1745,6 +1769,7 @@ const DollContainer = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         setDisplay('none');
+
         if (!name) {
             return true;
         }
@@ -1807,12 +1832,13 @@ const DollContainer = () => {
         if (user && token) {
             dispatch(dollSaveInitiate(doll, token));
             dispatch(dollsInitiate(token));
+
             setDollNameExists(false);
             setDollName('');
             setName('');
         } else {
             dispatch(loginError('You need to log in first to save your doll'));
-            navigate('/login');
+            dispatch(addError('Для сохранения куклы необходима авторизация'))
         }
     }
 
@@ -2035,7 +2061,7 @@ const DollContainer = () => {
         }
         setDollName(name);
 
-        const exists = dolls.filter(doll => doll.name === name);
+        const exists = dolls.filter(doll => doll.name.toLowerCase() === name.toLowerCase());
 
         if (exists[0]) {
             setDollNameExists(true);
@@ -2046,7 +2072,6 @@ const DollContainer = () => {
         setName('');
         setDollName('');
         setDollNameExists(false);
-        setDisplay('none');
     }
 
     const handleFocus = () => {
@@ -2074,713 +2099,845 @@ const DollContainer = () => {
 
     const handleClick = () => {
         handleCancel();
-        setDisplay('block');
+        display === 'block' ? setDisplay('none') : setDisplay('block');
     }
 
-    return (<div style={{paddingBottom: eng ? 10 : 9}}>
-        <header style={{borderBottom: '1px solid rgb(234, 201, 136)', height: 37}}>
-            <div style={{display: 'flex', justifyContent: 'space-evenly', paddingTop: eng ? 0 : 3}}>
-                <Button className="button-hover" style={{
-                    fontSize: eng ? '0.875rem' : '0.7rem'
-                }} onClick={resetSkills}>
-                    {buttons.resetSkills}
-                </Button>
-                <div className="save-button">
-                    <Button className="button-hover" style={{fontSize: eng ? '0.875rem' : '0.7rem'}}
-                            onClick={handleClick}>
-                        {buttons.save}
-                    </Button>
-                    <div className="modal" style={{display: display}} onClick={handleCancel}></div>
-                    <div className="save-popup" style={{
-                        flexDirection: 'column',
-                        background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                        display: display
-                    }}>
-                        {dollName ? (<div>
-                            {dollNameExists ? (<div>
-                                <div>
-                                    {texts.dollWithName}
-                                    <b style={{color: 'white'}}>{dollName}</b>
-                                    {texts.alreadyExists}
-                                    <b style={{color: 'white'}}>{dollName}</b>
-                                    {texts.doll}
-                                </div>
-                                <div style={{
-                                    justifyContent: 'space-evenly', display: 'flex', marginTop: 8
-                                }}>
-                                    <Button className="button-hover"
-                                            onClick={handleSubmit}>{buttons.confirm}</Button>
-                                    <Button className="button-hover"
-                                            onClick={handleCancel}>{buttons.cancel}</Button>
-                                </div>
-                            </div>) : (<div>
-                                <div>{texts.saveDoll}<b
-                                    style={{color: 'white'}}>{dollName}</b>?
-                                </div>
-                                <div style={{
-                                    justifyContent: 'space-evenly', display: 'flex', marginTop: 8
-                                }}>
-                                    <Button className="button-hover"
-                                            onClick={handleSubmit}>{buttons.confirm}</Button>
-                                    <Button className="button-hover"
-                                            onClick={handleCancel}>{buttons.cancel}</Button>
-                                </div>
-                            </div>)}
-                        </div>) : (<div>
-                            <div style={{marginBottom: 8}}>{texts.dollsName}</div>
-                            <form action="" onSubmit={handleSetName}
-                                  style={{width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-                                <input type="text" name="save-name" placeholder={inputs.name} value={name} style={{width: '90%', marginTop: 12}}
-                                       onClick={handleFocus}
-                                       onChange={e => setName(e.target.value)}/>
-                                <Button className="button-hover" type="submit"
-                                        style={{fontSize: eng ? '0.875rem' : '0.75rem', marginTop: 12}}
-                                        sx={{ml: 1}}>{buttons.setName}</Button>
-                            </form>
-                            {dollNameError && (<div style={{color: 'white', marginTop: 10}}>
-                                {dollNameError}
-                            </div>)}
-                        </div>)}
-                    </div>
-                </div>
-                <Button className="button-hover" style={{
-                    fontSize: eng ? '0.875rem' : '0.7rem'
-                }} onClick={handleClear}>
-                    {buttons.resetItems}
-                </Button>
-            </div>
-        </header>
-        <div style={{display: 'flex', justifyContent: 'space-between', height: 60}}>
-            <div></div>
-            <div style={{
-                display: 'flex', justifyContent: 'space-between', flexDirection: 'column', width: 200
-            }}>
-                <div style={{
-                    display: 'flex', textAlign: 'center', alignItems: 'center'
-                }}>
-                    <div style={{
-                        display: 'flex', textAlign: 'center', alignItems: 'center'
-                    }}>
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`} alt="degree level"/>
-                        <b>
-                            <Stat stat={titleLevel} itemStat={0} statName='title'/>
-                        </b>
-                    </div>
-                    <div>
-                        <select className="select-great" id="title-great"
-                                style={{
-                                    fontSize: eng ? '0.875rem' : '0.85rem',
-                                    background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center !important`
-                                }} onChange={handleSelect}
-                                value={titleGreatness}>
-                            <option value="1">{selects.select1}</option>
-                            <option value="2">{selects.select2}</option>
-                            <option value="3">{selects.select3}</option>
-                            <option value="4">{selects.select4}</option>
-                        </select>
-                    </div>
-                </div>
-                <div style={{
-                    display: 'flex', textAlign: 'center', alignItems: 'center'
-                }}>
-                    <div style={{
-                        display: 'flex', justifyContent: 'space-between', textAlign: 'center', alignItems: 'center'
-                    }}>
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`} alt="degree level"/>
-                        <b>
-                            <Stat stat={degreeLevel} itemStat={0} statName='degree'/>
-                        </b>
-                    </div>
-                    <div>
-                        <select className="select-great" id="degree-great"
-                                style={{
-                                    fontSize: eng ? '0.875rem' : '0.85rem',
-                                    background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center !important`
-                                }} onChange={handleSelect}
-                                value={degreeGreatness}>
-                            <option value="1">{selects.select1}</option>
-                            <option value="2">{selects.select2}</option>
-                            <option value="3">{selects.select3}</option>
-                            <option value="4">{selects.select4}</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+    const checkIfRing = (item) => {
+        return item.typeNameEng === 'Ring';
+    }
 
-        </div>
-        <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            width: '100%',
-            height: 340,
-            background: `url(${process.env.REACT_APP_BACKEND_URL}/image/doll-background) center no-repeat`
-        }}>
-            <div className="doll-column" style={{marginLeft: 28, marginTop: 20}}>
+    const getItems = (item) => {
+        dispatch(itemsInitiate(item))
+    }
 
-                <div className={crystalPD ? "slot special contains-item" : "slot special"}
-                     style={{marginTop: 91, marginLeft: 22}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
-                         alt=""/>
-                    {crystalPD && (<Item itemClassName="doll-item" item={crystalPD} dollItem='true'/>)}
-                </div>
-                <div className={crystalMD ? "slot special contains-item" : "slot special"} style={{marginLeft: 22}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
-                         alt=""/>
-                    {crystalMD && (<Item itemClassName="doll-item" item={crystalMD} dollItem='true'/>)}
-                </div>
-                <div className={crystalPA ? "slot special contains-item" : "slot special"} style={{marginLeft: 22}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
-                         alt=""/>
-                    {crystalPA && (<Item itemClassName="doll-item" item={crystalPA} dollItem='true'/>)}
-                </div>
-                <div className={crystalMA ? "slot special contains-item" : "slot special"} style={{marginLeft: 22}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
-                         alt=""/>
-                    {crystalMA && (<Item itemClassName="doll-item" item={crystalMA} dollItem='true'/>)}
-                </div>
-            </div>
-            <div className="doll-column" style={{marginLeft: 10, marginTop: 3}}>
-                <div className={helmet ? "slot helmet contains-item" : "slot helmet"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-helmet`} className="item-before" alt=""/>
-                    {helmet && (<Item itemClassName="doll-item" item={helmet} dollItem='true'/>)}
-                </div>
-                <div className={amulet ? "slot amulet contains-item" : "slot amulet"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-amulet`} className="item-before" alt=""/>
-                    {amulet && (<Item itemClassName="doll-item" item={amulet} dollItem='true'/>)}
-                </div>
-                <div className={shield ? "slot shield contains-item" : "slot shield"} style={{marginTop: 36}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-shield`} className="item-before" alt=""/>
-                    {shield && (<Item itemClassName="doll-item" item={shield} dollItem='true'/>)}
-                </div>
-                <div className={bracelet1 ? "slot bracelet contains-item" : "slot bracelet"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-bracers`} className="item-before"
-                         alt=""/>
-                    {bracelet1 && (<Item itemClassName="doll-item" item={bracelet1} dollItem='true'/>)}
-                </div>
-                <div className={ring1 ? "slot ring contains-item" : "slot ring"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-rings`} className="item-before" alt=""/>
-                    {ring1 && (<Item itemClassName="doll-item" item={ring1} dollItem='true'/>)}
-                </div>
-                <div className={ring2 ? "slot ring contains-item" : "slot ring"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-rings`} className="item-before" alt=""/>
-                    {ring2 && (<Item itemClassName="doll-item" item={ring2} dollItem='true'/>)}
-                </div>
-            </div>
-            <div className="doll-column" style={{marginLeft: 15, marginTop: 75}}>
-                <div className={jacket ? "slot jacket contains-item" : "slot jacket"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-armor`} className="item-before" alt=""/>
-                    {jacket && (<Item itemClassName="doll-item" item={jacket} dollItem='true'/>)}
-                </div>
-                <div className={belt ? "slot belt contains-item" : "slot belt"} style={{marginTop: 36}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-belt`} className="item-before" alt=""/>
-                    {belt && (<Item itemClassName="doll-item" item={belt} dollItem='true'/>)}
-                </div>
-                <div className={pants ? "slot pants contains-item" : "slot pants"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-pants`} className="item-before" alt=""/>
-                    {pants && (<Item itemClassName="doll-item" item={pants} dollItem='true'/>)}
-                </div>
-                <div className={boots ? "slot boots contains-item" : "slot boots"} style={{marginTop: 37}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-shoes`} className="item-before" alt=""/>
-                    {boots && (<Item itemClassName="doll-item" item={boots} dollItem='true'/>)}
-                </div>
-            </div>
-            <div className="doll-column" style={{marginLeft: 15, marginTop: 40}}>
-                <div className={profession ? "slot special contains-item" : "slot special"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
-                         alt=""/>
-                    {profession && (<Item itemClassName="doll-item" item={profession} dollItem='true'/>)}
-                </div>
-                <div className={gloves ? "slot gloves contains-item" : "slot gloves"} style={{marginTop: 37}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-gloves`} className="item-before" alt=""/>
-                    {gloves && (<Item itemClassName="doll-item" item={gloves} dollItem='true'/>)}
-                </div>
-                <div className={bracelet2 ? "slot bracelet contains-item" : "slot bracelet"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-bracers`} className="item-before"
-                         alt=""/>
-                    {bracelet2 && (<Item itemClassName="doll-item" item={bracelet2} dollItem='true'/>)}
-                </div>
-                <div className={ring3 ? "slot ring contains-item" : "slot ring"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-rings`} className="item-before" alt=""/>
-                    {ring3 && (<Item itemClassName="doll-item" item={ring3} dollItem='true'/>)}
-                </div>
-                <div className={ring4 ? "slot ring contains-item" : "slot ring"}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-rings`} className="item-before" alt=""/>
-                    {ring4 && (<Item itemClassName="doll-item" item={ring4} dollItem='true'/>)}
-                </div>
-            </div>
-            <div style={{
-                display: 'flex', justifyContent: 'space-between', flexDirection: 'column', marginLeft: 15, marginTop: 40
-            }}>
-                <div style={{display: 'flex',}}>
-                    <div className={weapon ? "slot special contains-item" : "slot special"}>
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
-                             alt=""/>
-                        {weapon && (<Item itemClassName="doll-item" item={weapon} dollItem='true'/>)}
+    useEffect(() => {
+        if (isUtils && loaded) {
+            setStats(prevStats => ({
+                ...prevStats,
+                minHp: hpStats + levelHp,
+                maxHp: Math.floor((hpStats + levelHp) * 1.15),
+                pd: pdStats,
+                pa: paStats,
+                md: mdStats,
+                ma: maStats,
+                weaponAvgPd: weapon?.avgPd,
+                weaponAvgMd: weapon?.avgMd,
+                spread: weapon?.dmgSpread,
+                cooldown: weapon?.cooldown
+            }));
+        }
+
+    }, [loaded, hpStats, levelHp, pdStats, paStats, mdStats, maStats, weapon, weapon?.cooldown, weapon?.dmgSpread, weapon?.avgMd, weapon?.avgPd])
+
+    return (
+        <div className="doll-container" style={{border: isUtils ? 'none' : ''}}>
+            <div className="container--indicator" ref={dollContainerRef}></div>
+            {
+                !isUtils ? <header className="doll-container__header"
+                                    style={{
+                                        background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) repeat center`
+                                    }}>
+                    <div className="doll-container__menu">
+                        <Button className="button secondary" onClick={resetSkills}>
+                            {buttons.resetSkills}
+                        </Button>
+                        <Button className="button secondary" onClick={handleClear}>
+                            {buttons.resetItems}
+                        </Button>
                     </div>
+                </header> :
+                <div className="util-dolls__doll-header">
+                    <div className="util-dolls__header-buttons">
+                        <Button className="button secondary" onClick={handleLeftItems}>{buttons.items}</Button>
+                        <Button className="button secondary" onClick={unsetLeft}>{buttons.dolls}</Button>
+                        <Button className="button secondary" onClick={handleClick}>{buttons.save}</Button>
+                    </div>
+
+                    <div className="util-dolls__header-name">{selectedName}</div>
                 </div>
-                <div style={{display: 'flex', marginBottom: 48}}>
+
+            }
+            <div className="doll-container__popup">
+                <div className="modal" style={{display: display}} onClick={handleClick}></div>
+                <div className="doll-container__popup-content" style={{
+                    background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
+                    display: display
+                }}>
+                    {dollName ? (<>
+                        {dollNameExists ? (<>
+                            <div>
+                                {texts.dollWithName}
+                                <b className="text-secondary">{dollName}</b>
+                                {texts.alreadyExists}
+                                <b className="text-secondary">{dollName}</b>
+                                {texts.doll}
+                            </div>
+                            <div className="doll-container__popup-buttons">
+                                <Button className="button primary"
+                                        onClick={handleSubmit}>{buttons.confirm}</Button>
+                                <Button className="button primary"
+                                        onClick={handleCancel}>{buttons.cancel}</Button>
+                            </div>
+                        </>) : (<>
+                            {texts.saveDoll}
+                            <b className="text-secondary">{dollName}</b>?
+                            <div className="doll-container__popup-buttons">
+                                <Button className="button primary"
+                                        onClick={handleSubmit}>{buttons.confirm}</Button>
+                                <Button className="button primary"
+                                        onClick={handleCancel}>{buttons.cancel}</Button>
+                            </div>
+                        </>)}
+                    </>) : (<>
+                        <div>{texts.dollsName}</div>
+                        <form action=""
+                              className="doll-container__popup-form"
+                              onSubmit={handleSetName}
+                        >
+                            <input className="input doll-container__popup-input"
+                                   type="text"
+                                   name="save-name"
+                                   placeholder={inputs.name} value={name}
+                                   onClick={handleFocus}
+                                   onChange={e => setName(e.target.value)}/>
+                            <Button className="button primary" type="submit">{buttons.setName}</Button>
+                        </form>
+                    </>)}
+                </div>
+            </div>
+            <div className="doll-container__content">
+                <div className="doll-container__levels">
+                    {
+                        dollDetailsLoading ? (<Box className="loader">
+                            <CircularProgress/>
+                        </Box>) : (<div className="save-button">
+                            {
+                                !isUtils && <>
+                                    <Button className="button secondary" onClick={handleClick}>{buttons.save}</Button>
+                                    <CustomLink style={{margin: '0 5px 0 5px'}} to={'/utils/dolls'}>
+                                        <Button className="button secondary">{buttons.compare}</Button>
+                                    </CustomLink>
+                                </>
+                            }
+                        </div>)
+                    }
+                    <div className="doll-container__levels-container">
+                        <div className="doll-container__level">
+                            <div className="doll-container__level-img-lvl">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`} alt="degree level"/>
+                                <b>
+                                    <Stat stat={titleLevel} itemStat={0} statName='title'/>
+                                </b>
+                            </div>
+                            <select className="select select-great" id="title-great"
+                                    style={{
+                                        background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center !important`
+                                    }} onChange={handleSelect}
+                                    value={titleGreatness}>
+                                <option value="1">{selects.select1}</option>
+                                <option value="2">{selects.select2}</option>
+                                <option value="3">{selects.select3}</option>
+                                <option value="4">{selects.select4}</option>
+                            </select>
+                        </div>
+                        <div className="doll-container__level">
+                            <div className="doll-container__level-img-lvl">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`} alt="degree level"/>
+                                <b>
+                                    <Stat stat={degreeLevel} itemStat={0} statName='degree'/>
+                                </b>
+                            </div>
+                            <select className="select select-great" id="degree-great"
+                                    style={{
+                                        background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center !important`
+                                    }} onChange={handleSelect}
+                                    value={degreeGreatness}>
+                                <option value="1">{selects.select1}</option>
+                                <option value="2">{selects.select2}</option>
+                                <option value="3">{selects.select3}</option>
+                                <option value="4">{selects.select4}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <div className="doll-container__doll"
+                     style={{background: `url(${process.env.REACT_APP_BACKEND_URL}/image/doll-background) center no-repeat`}}>
                     <div className="doll-column">
-                        <div className={buff10 ? "slot special contains-item" : "slot special"}>
+                        <div id="doll-slot__crystalPD"
+                            title={buttons.crystalPD}
+                             className={crystalPD ? "slot special contains-item" : "slot slot-clickable special"}
+                             style={{marginTop: 91}} onClick={() => getItems('crystals')}>
                             <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
                                  alt=""/>
-                            {buff10 && (<Item itemClassName="doll-item" item={buff10} dollItem='true' buff='true'/>)}
+                            {crystalPD && (<Item itemClassName="doll-item" item={crystalPD} dollItem='true'/>)}
                         </div>
-                        <div className={buff8 ? "slot special contains-item" : "slot special"}>
+                        <div id="doll-slot__crystalMD"
+                            title={buttons.crystalMD}
+                             className={crystalMD ? "slot special contains-item" : "slot slot-clickable special"}
+                              onClick={() => getItems('crystals')}>
                             <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
                                  alt=""/>
-                            {buff8 && (<Item itemClassName="doll-item" item={buff8} dollItem='true' buff='true'/>)}
+                            {crystalMD && (<Item itemClassName="doll-item" item={crystalMD} dollItem='true'/>)}
                         </div>
-                        <div className={buff6 ? "slot special contains-item" : "slot special"}>
+                        <div id="doll-slot__crystalPA"
+                            title={buttons.crystalPA}
+                             className={crystalPA ? "slot special contains-item" : "slot slot-clickable special"}
+                              onClick={() => getItems('crystals')}>
                             <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
                                  alt=""/>
-                            {buff6 && (<Item itemClassName="doll-item" item={buff6} dollItem='true' buff='true'/>)}
+                            {crystalPA && (<Item itemClassName="doll-item" item={crystalPA} dollItem='true'/>)}
                         </div>
-                        <div className={buff4 ? "slot special contains-item" : "slot special"}>
+                        <div id="doll-slot__crystalMA"
+                            title={buttons.crystalMA}
+                             className={crystalMA ? "slot special contains-item" : "slot slot-clickable special"}
+                              onClick={() => getItems('crystals')}>
                             <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
                                  alt=""/>
-                            {buff4 && (<Item itemClassName="doll-item" item={buff4} dollItem='true' buff='true'/>)}
-                        </div>
-                        <div className={buff2 ? "slot special contains-item" : "slot special"}>
-                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
-                                 alt=""/>
-                            {buff2 && (<Item itemClassName="doll-item" item={buff2} dollItem='true' buff='true'/>)}
+                            {crystalMA && (<Item itemClassName="doll-item" item={crystalMA} dollItem='true'/>)}
                         </div>
                     </div>
                     <div className="doll-column">
-                        <div className={buff9 ? "slot special contains-item" : "slot special"}>
-                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
+                        <div id="doll-slot__helmet"
+                            title={buttons.helmets}
+                             className={helmet ? "slot helmet contains-item" : "slot slot-clickable helmet"}
+                             onClick={() => getItems('helmet')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-helmet`} className="item-before"
                                  alt=""/>
-                            {buff9 && (<Item itemClassName="doll-item" item={buff9} dollItem='true' buff='true'/>)}
+                            {helmet && (<Item itemClassName="doll-item" prefix={helmet.prefix} item={helmet} dollItem='true'/>)}
                         </div>
-                        <div className={buff7 ? "slot special contains-item" : "slot special"}>
-                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
+                        <div  id="doll-slot__amulet"
+                            title={buttons.amulets}
+                             className={amulet ? "slot amulet contains-item" : "slot slot-clickable amulet"}
+                             onClick={() => getItems('amulet')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-amulet`} className="item-before"
                                  alt=""/>
-                            {buff7 && (<Item itemClassName="doll-item" item={buff7} dollItem='true' buff='true'/>)}
+                            {amulet && (<Item itemClassName="doll-item" prefix={amulet.prefix} item={amulet} dollItem='true'/>)}
                         </div>
-                        <div className={buff5 ? "slot special contains-item" : "slot special"}>
-                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
+                        <div id="doll-slot__shield"
+                            title={buttons.shields}
+                             className={shield ? "slot shield contains-item" : "slot slot-clickable shield"}
+                             style={{marginTop: 36}} onClick={() => getItems('shield')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-shield`} className="item-before"
                                  alt=""/>
-                            {buff5 && (<Item itemClassName="doll-item" item={buff5} dollItem='true' buff='true'/>)}
+                            {shield && (<Item itemClassName="doll-item" prefix={shield.prefix} item={shield} dollItem='true'/>)}
                         </div>
-                        <div className={buff3 ? "slot special contains-item" : "slot special"}>
-                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
+                        <div id="doll-slot__bracer1"
+                            title={buttons.bracers}
+                             className={bracelet1 ? "slot bracelet contains-item" : "slot slot-clickable bracelet"}
+                             onClick={() => getItems('bracelet')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-bracers`} className="item-before"
                                  alt=""/>
-                            {buff3 && (<Item itemClassName="doll-item" item={buff3} dollItem='true' buff='true'/>)}
+                            {bracelet1 && (<Item itemClassName="doll-item" prefix={bracelet1.prefix} item={bracelet1} dollItem='true'/>)}
                         </div>
-                        <div className={buff1 ? "slot special contains-item" : "slot special"}>
+                        <div id="doll-slot__ring1"
+                            title={buttons.rings}
+                             className={ring1 ? "slot ring contains-item" : "slot slot-clickable ring"}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-rings`} className="item-before"
+                                 alt="" onClick={() => getItems('ring-title')}/>
+                            {ring1 && (<Item itemClassName="doll-item" prefix={ring1.prefix} item={ring1} dollItem='true' isRing={true}/>)}
+                        </div>
+                        <div id="doll-slot__ring2"
+                            title={buttons.rings}
+                             className={ring2 ? "slot ring contains-item" : "slot slot-clickable ring"}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-rings`} className="item-before"
+                                 alt="" onClick={() => getItems('ring-title')}/>
+                            {ring2 && (<Item itemClassName="doll-item" prefix={ring2.prefix} item={ring2} dollItem='true' isRing={true}/>)}
+                        </div>
+                    </div>
+                    <div className="doll-column">
+                        <div id="doll-slot__cuirass"
+                            title={buttons.cuirasses} className={jacket ? "slot jacket contains-item" : "slot jacket"}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-armor`} className="item-before"
+                                 alt=""/>
+                            {jacket && (<Item itemClassName="doll-item" prefix={jacket.prefix} item={jacket} dollItem='true'/>)}
+                        </div>
+                        <div id="doll-slot__belt"
+                            title={buttons.belts}
+                             className={belt ? "slot belt contains-item" : "slot slot-clickable belt"}
+                             style={{marginTop: 36}} onClick={() => getItems('belt')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-belt`} className="item-before"
+                                 alt=""/>
+                            {belt && (<Item itemClassName="doll-item" prefix={belt.prefix} item={belt} dollItem='true'/>)}
+                        </div>
+                        <div id="doll-slot__pants"
+                            title={buttons.pants}
+                             className={pants ? "slot pants contains-item" : "slot slot-clickable pants"}
+                             onClick={() => getItems('pants')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-pants`} className="item-before"
+                                 alt=""/>
+                            {pants && (<Item itemClassName="doll-item" prefix={pants.prefix} item={pants} dollItem='true'/>)}
+                        </div>
+                        <div id="doll-slot__boots"
+                            title={buttons.boots}
+                             className={boots ? "slot boots contains-item" : "slot slot-clickable boots"}
+                             style={{marginTop: 37}} onClick={() => getItems('boots')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-shoes`} className="item-before"
+                                 alt=""/>
+                            {boots && (<Item itemClassName="doll-item" prefix={boots.prefix} item={boots} dollItem='true'/>)}
+                        </div>
+                    </div>
+                    <div className="doll-column">
+                        <div id="doll-slot__profession"
+                            title={buttons.professions}
+                             className={profession ? "slot special contains-item" : "slot special"}>
                             <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`} className="item-before"
                                  alt=""/>
-                            {buff1 && (<Item itemClassName="doll-item" item={buff1} dollItem='true' buff='true'/>)}
+                            {profession && (<Item itemClassName="doll-item" item={profession} dollItem='true'/>)}
+                        </div>
+                        <div id="doll-slot__gloves"
+                            title={buttons.gloves}
+                             className={gloves ? "slot gloves contains-item" : "slot slot-clickable gloves"}
+                             style={{marginTop: 37}} onClick={() => getItems('gloves')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-gloves`} className="item-before"
+                                 alt=""/>
+                            {gloves && (<Item itemClassName="doll-item" prefix={gloves.prefix} item={gloves} dollItem='true'/>)}
+                        </div>
+                        <div id="doll-slot__bracer2"
+                            title={buttons.bracers}
+                             className={bracelet2 ? "slot bracelet contains-item" : "slot slot-clickable bracelet"}
+                             onClick={() => getItems('bracelet')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-bracers`} className="item-before"
+                                 alt=""/>
+                            {bracelet2 && (<Item itemClassName="doll-item" prefix={bracelet2.prefix} item={bracelet2} dollItem='true'/>)}
+                        </div>
+                        <div id="doll-slot__ring3"
+                            title={buttons.rings}
+                             className={ring3 ? "slot ring contains-item" : "slot slot-clickable ring"}
+                             onClick={() => getItems('ring-title')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-rings`} className="item-before"
+                                 alt=""/>
+                            {ring3 && (<Item itemClassName="doll-item" prefix={ring3.prefix} item={ring3} dollItem='true' isRing={true}/>)}
+                        </div>
+                        <div id="doll-slot__ring4"
+                            title={buttons.rings}
+                             className={ring4 ? "slot ring contains-item" : "slot slot-clickable ring"}
+                             onClick={() => getItems('ring-title')}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-rings`} className="item-before"
+                                 alt=""/>
+                            {ring4 && (<Item itemClassName="doll-item" prefix={ring4.prefix} item={ring4} dollItem='true' isRing={true}/>)}
+                        </div>
+                    </div>
+                    <div className="doll-column">
+                        <div id="doll-slot__weapon"
+                            title={buttons.weapons}
+                             className={weapon ? "slot special contains-item" : "slot special"}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                 className="item-before" alt=""/>
+                            {weapon && (<Item itemClassName="doll-item" prefix={weapon.prefix} item={weapon} dollItem='true'/>)}
+                        </div>
+                        <div style={{display: 'flex', marginBottom: 48}}>
+                            <div className="doll-column">
+                                <div id="doll-slot__buff10"
+                                    title={buttons.magic}
+                                     className={buff10 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff10 && (
+                                        <Item itemClassName="doll-item" item={buff10} dollItem='true' buff='true'/>)}
+                                </div>
+                                <div  id="doll-slot__buff8"
+                                    title={buttons.magic}
+                                     className={buff8 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff8 && (
+                                        <Item itemClassName="doll-item" item={buff8} dollItem='true' buff='true'/>)}
+                                </div>
+                                <div id="doll-slot__buff6"
+                                    title={buttons.magic}
+                                     className={buff6 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff6 && (
+                                        <Item itemClassName="doll-item" item={buff6} dollItem='true' buff='true'/>)}
+                                </div>
+                                <div id="doll-slot__buff4"
+                                    title={buttons.magic}
+                                     className={buff4 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff4 && (
+                                        <Item itemClassName="doll-item" item={buff4} dollItem='true' buff='true'/>)}
+                                </div>
+                                <div id="doll-slot__buff2"
+                                    title={buttons.magic}
+                                     className={buff2 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff2 && (
+                                        <Item itemClassName="doll-item" item={buff2} dollItem='true' buff='true'/>)}
+                                </div>
+                            </div>
+                            <div className="doll-column">
+                                <div id="doll-slot__buff9"
+                                    title={buttons.magic}
+                                     className={buff9 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff9 && (
+                                        <Item itemClassName="doll-item" item={buff9} dollItem='true' buff='true'/>)}
+                                </div>
+                                <div id="doll-slot__buff7"
+                                    title={buttons.magic}
+                                     className={buff7 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff7 && (
+                                        <Item itemClassName="doll-item" item={buff7} dollItem='true' buff='true'/>)}
+                                </div>
+                                <div id="doll-slot__buff5"
+                                    title={buttons.magic}
+                                     className={buff5 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff5 && (
+                                        <Item itemClassName="doll-item" item={buff5} dollItem='true' buff='true'/>)}
+                                </div>
+                                <div id="doll-slot__buff3"
+                                    title={buttons.magic}
+                                     className={buff3 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff3 && (
+                                        <Item itemClassName="doll-item" item={buff3} dollItem='true' buff='true'/>)}
+                                </div>
+                                <div id="doll-slot__buff1"
+                                    title={buttons.magic}
+                                     className={buff1 ? "slot special contains-item" : "slot special"}>
+                                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/item-special`}
+                                         className="item-before" alt=""/>
+                                    {buff1 && (
+                                        <Item itemClassName="doll-item" item={buff1} dollItem='true' buff='true'/>)}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div style={{marginTop: -20}}>
-            <div style={{textAlign: 'center'}}>{texts.extraSlots}</div>
-            <div style={{justifyContent: 'center', display: 'flex', marginBottom: 10}}>
-                <div className={slot1 ? "slot blank contains-item" : "slot blank"} id="slot1" onDrop={drop}
-                     onDragOver={allowDrop}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before" alt=""/>
-                    {slot1 && (<Item item={slot1} dollItem='true' slotItem='true'/>)}
+                <div className="doll-container__extra">
+                    <div>{texts.extraSlots}</div>
+                    <div className="doll-container__extra-slots">
+                        <div className={slot1 ? "slot blank contains-item" : "slot blank"} id="slot1" onDrop={drop}
+                             onDragOver={allowDrop}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before"
+                                 alt=""/>
+                            {slot1 && (
+                                <Item item={slot1} dollItem='true' prefix={slot1.prefix} slotItem='true' isRing={checkIfRing(slot1)}/>)}
+                        </div>
+                        <div className={slot2 ? "slot blank contains-item" : "slot blank"} id="slot2" onDrop={drop}
+                             onDragOver={allowDrop}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before"
+                                 alt=""/>
+                            {slot2 && (
+                                <Item item={slot2} dollItem='true' prefix={slot2.prefix} slotItem='true' isRing={checkIfRing(slot2)}/>)}
+                        </div>
+                        <div className={slot3 ? "slot blank contains-item" : "slot blank"} id="slot3" onDrop={drop}
+                             onDragOver={allowDrop}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before"
+                                 alt=""/>
+                            {slot3 && (
+                                <Item item={slot3} dollItem='true' prefix={slot3.prefix} slotItem='true' isRing={checkIfRing(slot3)}/>)}
+                        </div>
+                        <div className={slot4 ? "slot blank contains-item" : "slot blank"} id="slot4" onDrop={drop}
+                             onDragOver={allowDrop}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before"
+                                 alt=""/>
+                            {slot4 && (
+                                <Item item={slot4} dollItem='true' prefix={slot4.prefix} slotItem='true' isRing={checkIfRing(slot4)}/>)}
+                        </div>
+                        <div className={slot5 ? "slot blank contains-item" : "slot blank"} id="slot5" onDrop={drop}
+                             onDragOver={allowDrop}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before"
+                                 alt=""/>
+                            {slot5 && (
+                                <Item item={slot5} dollItem='true' prefix={slot5.prefix} slotItem='true' isRing={checkIfRing(slot5)}/>)}
+                        </div>
+                        <div className={slot6 ? "slot blank contains-item" : "slot blank"} id="slot6" onDrop={drop}
+                             onDragOver={allowDrop}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before"
+                                 alt=""/>
+                            {slot6 && (
+                                <Item item={slot6} dollItem='true' prefix={slot6.prefix} slotItem='true' isRing={checkIfRing(slot6)}/>)}
+                        </div>
+                        <div className={slot7 ? "slot blank contains-item" : "slot blank"} id="slot7" onDrop={drop}
+                             onDragOver={allowDrop}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before"
+                                 alt=""/>
+                            {slot7 && (
+                                <Item item={slot7} dollItem='true' prefix={slot7.prefix} slotItem='true' isRing={checkIfRing(slot7)}/>)}
+                        </div>
+                        <div className={slot8 ? "slot blank contains-item" : "slot blank"} id="slot8" onDrop={drop}
+                             onDragOver={allowDrop}>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before"
+                                 alt=""/>
+                            {slot8 && (
+                                <Item item={slot8} dollItem='true' prefix={slot8.prefix} slotItem='true' isRing={checkIfRing(slot8)}/>
+                            )}
+                        </div>
+                    </div>
                 </div>
-                <div className={slot2 ? "slot blank contains-item" : "slot blank"} id="slot2" onDrop={drop}
-                     onDragOver={allowDrop}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before" alt=""/>
-                    {slot2 && (<Item item={slot2} dollItem='true' slotItem='true'/>)}
-                </div>
-                <div className={slot3 ? "slot blank contains-item" : "slot blank"} id="slot3" onDrop={drop}
-                     onDragOver={allowDrop}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before" alt=""/>
-                    {slot3 && (<Item item={slot3} dollItem='true' slotItem='true'/>)}
-                </div>
-                <div className={slot4 ? "slot blank contains-item" : "slot blank"} id="slot4" onDrop={drop}
-                     onDragOver={allowDrop}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before" alt=""/>
-                    {slot4 && (<Item item={slot4} dollItem='true' slotItem='true'/>)}
-                </div>
-                <div className={slot5 ? "slot blank contains-item" : "slot blank"} id="slot5" onDrop={drop}
-                     onDragOver={allowDrop}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before" alt=""/>
-                    {slot5 && (<Item item={slot5} dollItem='true' slotItem='true'/>)}
-                </div>
-                <div className={slot6 ? "slot blank contains-item" : "slot blank"} id="slot6" onDrop={drop}
-                     onDragOver={allowDrop}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before" alt=""/>
-                    {slot6 && (<Item item={slot6} dollItem='true' slotItem='true'/>)}
-                </div>
-                <div className={slot7 ? "slot blank contains-item" : "slot blank"} id="slot7" onDrop={drop}
-                     onDragOver={allowDrop}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before" alt=""/>
-                    {slot7 && (<Item item={slot7} dollItem='true' slotItem='true'/>)}
-                </div>
-                <div className={slot8 ? "slot blank contains-item" : "slot blank"} id="slot8" onDrop={drop}
-                     onDragOver={allowDrop}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/block-brown`} className="item-before" alt=""/>
-                    {slot8 && (<Item item={slot8} dollItem='true' slotItem='true'/>)}
-                </div>
-            </div>
 
-
-        </div>
-        <div style={{borderTop: '1px solid rgb(234, 201, 136)'}}>
-            <div style={{
-                display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgb(234, 201, 136)'
-            }}>
-                <div className="column">
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/th`} width="19px" height="19px" alt=""/>
-                        <div className="stat-field">
-                            {hpStats + levelHp} / {Math.floor((hpStats + levelHp) * 1.15)}
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/td`} width="19px" height="19px" alt=""/>
-                        <div className="stat-field">
-                            {pdStats}
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/ta`} width="19px" height="19px" alt=""/>
-                        <div className="stat-field">
-                            {paStats}
-                        </div>
-                    </div>
-                </div>
-                <div className="column">
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dh`} width="19px" height="19px" alt=""/>
-                        <div className="stat-field">
-                            {pranaStats + levelPrana}
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dd`} width="19px" height="19px" alt=""/>
-                        <div className="stat-field">
-                            {mdStats}
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/da`} width="19px" height="19px" alt=""/>
-                        <div className="stat-field">
-                            {maStats}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                borderBottom: '1px solid rgb(234, 201, 136)'
-            }}>
-                <div className="column">
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t1`} width="19px" height="19px" alt=""/>
-                        <button className="down"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
-                                disabled={strength === 0} id='strength-down'
-                                onClick={handleDecrease}/>
-                        <Stat statsAvailable={title} stat={strength} itemStat={strengthStats} reqStat={reqStrength}
-                              statName='strength'/>
-                        <button className="up"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
-                                id='strength-up' onClick={handleIncrease}/>
-                        <div className="number">
-                            [{reqStrength}]
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t2`} width="19px" height="19px" alt=""/>
-                        <button className="down"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
-                                disabled={dexterity === 0} id='dexterity-down'
-                                onClick={handleDecrease}/>
-                        <Stat statsAvailable={title} stat={dexterity} itemStat={dexterityStats} reqStat={reqDexterity}
-                              statName='dexterity'/>
-                        <button className="up"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
-                                id='dexterity-up' onClick={handleIncrease}/>
-                        <div className="number">
-                            [{reqDexterity}]
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t3`} width="19px" height="19px" alt=""/>
-                        <button className="down"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
-                                disabled={accuracy === 0} id='accuracy-down'
-                                onClick={handleDecrease}/>
-                        <Stat statsAvailable={title} stat={accuracy} itemStat={accuracyStats} reqStat={reqAccuracy}
-                              statName='accuracy'/>
-                        <button className="up"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
-                                id='accuracy-up' onClick={handleIncrease}/>
-                        <div className="number">
-                            [{reqAccuracy}]
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t4`} width="19px" height="19px" alt=""/>
-                        <button className="down"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
-                                disabled={endurance === 0} id='endurance-down'
-                                onClick={handleDecrease}/>
-                        <Stat statsAvailable={title} stat={endurance} itemStat={enduranceStats} reqStat={reqEndurance}
-                              statName='endurance'/>
-                        <button className="up"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
-                                id='endurance-up' onClick={handleIncrease}/>
-                        <div className="number">
-                            [{reqEndurance}]
-                        </div>
-                    </div>
-                </div>
-                <div className="column">
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d1`} width="19px" height="19px" alt=""/>
-                        <button className="down"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
-                                disabled={earth === 0} id='earth-down' onClick={handleDecrease}/>
-                        <Stat statsAvailable={degree} stat={earth} itemStat={earthStats} reqStat={reqEarth}
-                              statName='earth'/>
-                        <button className="up"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
-                                id='earth-up' onClick={handleIncrease}/>
-                        <div className="number">
-                            [{reqEarth}]
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d2`} width="19px" height="19px" alt=""/>
-                        <button className="down"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
-                                disabled={air === 0} id='air-down' onClick={handleDecrease}/>
-                        <Stat statsAvailable={degree} stat={air} itemStat={airStats} reqStat={reqAir} statName='air'/>
-                        <button className="up"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
-                                id='air-up' onClick={handleIncrease}/>
-                        <div className="number">
-                            [{reqAir}]
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d3`} width="19px" height="19px" alt=""/>
-                        <button className="down"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
-                                disabled={water === 0} id='water-down' onClick={handleDecrease}/>
-                        <Stat statsAvailable={degree} stat={water} itemStat={waterStats} reqStat={reqWater}
-                              statName='water'/>
-                        <button className="up"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
-                                id='water-up' onClick={handleIncrease}/>
-                        <div className="number">
-                            [{reqWater}]
-                        </div>
-                    </div>
-                    <div className="row">
-                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d4`} width="19px" height="19px" alt=""/>
-                        <button className="down"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
-                                disabled={fire === 0} id='fire-down' onClick={handleDecrease}/>
-                        <Stat statsAvailable={degree} stat={fire} itemStat={fireStats} reqStat={reqFire}
-                              statName='fire'/>
-                        <button className="up"
-                                style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
-                                id='fire-up' onClick={handleIncrease}/>
-                        <div className="number">
-                            [{reqFire}]
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-around',
-                paddingLeft: 20,
-                paddingRight: 20,
-                alignItems: 'center',
-                paddingTop: eng ? 5 : 8,
-                height: eng ? 38 : 36
-            }}>
-                <div style={{display: 'flex', justifyContent: 'center'}}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`} alt="" style={{width: 24, height: 19}}/>
-                    <div style={{
-                        marginLeft: 10, width: 40, color: (title < 0) && 'white', fontWeight: (title < 0) && 'bold',
-                        textAlign: 'center'
-                    }}>
-                        {title}
-                    </div>
-                </div>
-                <Button
-                    aria-owns={open ? 'mouse-over-popover' : undefined}
-                    aria-haspopup="true"
-                    onMouseEnter={handlePopoverOpen}
-                    onMouseLeave={handlePopoverClose}
-                    sx={{marginTop: 0}}
-                    className="button-hover"
-                    style={{fontSize: eng ? '0.875rem' : '0.7rem'}}
-                >
-                    {buttons.viewStats}
-                </Button>
-                <Popover
-                    id="mouse-over-popover"
-                    sx={{
-                        pointerEvents: 'none'
-                    }}
-                    open={open}
-                    anchorEl={anchorEl}
-                    anchorOrigin={{
-                        vertical: 'bottom', horizontal: 'center',
-                    }}
-                    transformOrigin={{
-                        vertical: 'bottom', horizontal: 'center'
-                    }}
-                    onClose={handlePopoverClose}
-                    disableRestoreFocus
-                >
-                    <div className="popup">
-                        <div style={{
-                            background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                            display: 'flex',
-                            borderBottom: '1px solid rgb(234, 201, 136)',
-                            borderTop: '1px solid rgb(234, 201, 136)',
-                        }}>
-                            <div className="column">
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t1`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {strength}
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t2`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {dexterity}
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t3`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {accuracy}
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t4`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {endurance}
-                                    </div>
+                <div className="doll-container__doll-stats-container">
+                    <div className="doll-container__doll-result-stats">
+                        <div className="column">
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/th`} width="19px" height="19px"
+                                     alt=""/>
+                                <div className="stat-field">
+                                    {hpStats + levelHp} / {Math.floor((hpStats + levelHp) * 1.15)}
                                 </div>
                             </div>
-                            <div className="column">
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d1`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {earth}
-                                    </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/td`} width="19px" height="19px"
+                                     alt=""/>
+                                <div className="stat-field"
+                                     style={{color: pdStats > 0 ? 'rgb(3, 107, 252)' : 'inherit'}}>
+                                    {pdStats}
                                 </div>
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d2`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {air}
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d3`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {water}
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d4`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {fire}
-                                    </div>
+                            </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/ta`} width="19px" height="19px"
+                                     alt=""/>
+                                <div className="stat-field">
+                                    {paStats}
                                 </div>
                             </div>
                         </div>
-                        <div style={{
-                            display: 'flex',
-                            background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                        }}>
-                            <div className="column">
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {title}
-                                    </div>
+                        <div className="column">
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dh`} width="19px" height="19px"
+                                     alt=""/>
+                                <div className="stat-field">
+                                    {pranaStats + levelPrana}
                                 </div>
                             </div>
-                            <div className="column">
-                                <div className="row">
-                                    <div className="popup-img">
-                                        <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`} width="19px"
-                                             height="19px" alt=""/>
-                                    </div>
-                                    <div className="popup-stat">
-                                        {degree}
-                                    </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dd`} width="19px" height="19px"
+                                     alt=""/>
+                                <div className="stat-field"
+                                     style={{color: mdStats > 0 ? 'rgb(3, 107, 252)' : 'inherit'}}>
+                                    {mdStats}
+                                </div>
+                            </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/da`} width="19px" height="19px"
+                                     alt=""/>
+                                <div className="stat-field">
+                                    {maStats}
                                 </div>
                             </div>
                         </div>
                     </div>
-                </Popover>
-                <div style={{display: 'flex', justifyContent: 'center'}}>
-                    <div style={{
-                        marginLeft: 10, width: 40, color: (degree < 0) && 'white', fontWeight: (degree < 0) && 'bold',
-                        textAlign: 'center'
-                    }}>
-                        {degree}
+                    <div className="doll-container__doll-set-stats">
+                        <div className="column">
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t1`} width="19px" height="19px"
+                                     alt=""/>
+                                <button className="down"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
+                                        disabled={strength === 0} id='strength-down'
+                                        onClick={handleDecrease}/>
+                                <Stat statsAvailable={title} stat={strength} itemStat={strengthStats}
+                                      reqStat={reqStrength}
+                                      statName='strength'/>
+                                <button className="up"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
+                                        id='strength-up' onClick={handleIncrease}/>
+                                <div className="number">
+                                    [{reqStrength}]
+                                </div>
+                            </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t2`} width="19px" height="19px"
+                                     alt=""/>
+                                <button className="down"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
+                                        disabled={dexterity === 0} id='dexterity-down'
+                                        onClick={handleDecrease}/>
+                                <Stat statsAvailable={title} stat={dexterity} itemStat={dexterityStats}
+                                      reqStat={reqDexterity}
+                                      statName='dexterity'/>
+                                <button className="up"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
+                                        id='dexterity-up' onClick={handleIncrease}/>
+                                <div className="number">
+                                    [{reqDexterity}]
+                                </div>
+                            </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t3`} width="19px" height="19px"
+                                     alt=""/>
+                                <button className="down"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
+                                        disabled={accuracy === 0} id='accuracy-down'
+                                        onClick={handleDecrease}/>
+                                <Stat statsAvailable={title} stat={accuracy} itemStat={accuracyStats}
+                                      reqStat={reqAccuracy}
+                                      statName='accuracy'/>
+                                <button className="up"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
+                                        id='accuracy-up' onClick={handleIncrease}/>
+                                <div className="number">
+                                    [{reqAccuracy}]
+                                </div>
+                            </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t4`} width="19px" height="19px"
+                                     alt=""/>
+                                <button className="down"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
+                                        disabled={endurance === 0} id='endurance-down'
+                                        onClick={handleDecrease}/>
+                                <Stat statsAvailable={title} stat={endurance} itemStat={enduranceStats}
+                                      reqStat={reqEndurance}
+                                      statName='endurance'/>
+                                <button className="up"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
+                                        id='endurance-up' onClick={handleIncrease}/>
+                                <div className="number">
+                                    [{reqEndurance}]
+                                </div>
+                            </div>
+                        </div>
+                        <div className="column">
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d1`} width="19px" height="19px"
+                                     alt=""/>
+                                <button className="down"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
+                                        disabled={earth === 0} id='earth-down' onClick={handleDecrease}/>
+                                <Stat statsAvailable={degree} stat={earth} itemStat={earthStats} reqStat={reqEarth}
+                                      statName='earth'/>
+                                <button className="up"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
+                                        id='earth-up' onClick={handleIncrease}/>
+                                <div className="number">
+                                    [{reqEarth}]
+                                </div>
+                            </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d2`} width="19px" height="19px"
+                                     alt=""/>
+                                <button className="down"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
+                                        disabled={air === 0} id='air-down' onClick={handleDecrease}/>
+                                <Stat statsAvailable={degree} stat={air} itemStat={airStats} reqStat={reqAir}
+                                      statName='air'/>
+                                <button className="up"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
+                                        id='air-up' onClick={handleIncrease}/>
+                                <div className="number">
+                                    [{reqAir}]
+                                </div>
+                            </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d3`} width="19px" height="19px"
+                                     alt=""/>
+                                <button className="down"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
+                                        disabled={water === 0} id='water-down' onClick={handleDecrease}/>
+                                <Stat statsAvailable={degree} stat={water} itemStat={waterStats} reqStat={reqWater}
+                                      statName='water'/>
+                                <button className="up"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
+                                        id='water-up' onClick={handleIncrease}/>
+                                <div className="number">
+                                    [{reqWater}]
+                                </div>
+                            </div>
+                            <div className="row">
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d4`} width="19px" height="19px"
+                                     alt=""/>
+                                <button className="down"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -18px center no-repeat`}}
+                                        disabled={fire === 0} id='fire-down' onClick={handleDecrease}/>
+                                <Stat statsAvailable={degree} stat={fire} itemStat={fireStats} reqStat={reqFire}
+                                      statName='fire'/>
+                                <button className="up"
+                                        style={{background: `transparent url(${process.env.REACT_APP_BACKEND_URL}/image/ctrls) -0px center no-repeat`}}
+                                        id='fire-up' onClick={handleIncrease}/>
+                                <div className="number">
+                                    [{reqFire}]
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`} alt="" style={{width: 24, height: 21}}/>
+                    <div className="doll-container__doll-footer">
+                        <div className="doll-container__doll-footer-side">
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`} alt=""
+                                 style={{width: 24, height: 19}}/>
+                            <div style={{
+                                color: (title < 0) && 'white',
+                                fontWeight: (title < 0) && 'bold'
+                            }}>
+                                {title}
+                            </div>
+                        </div>
+                        <Button
+                            aria-owns={open ? 'mouse-over-popover' : undefined}
+                            aria-haspopup="true"
+                            onMouseEnter={handlePopoverOpen}
+                            onMouseLeave={handlePopoverClose}
+                            sx={{marginTop: 0}}
+                            className="button secondary"
+                            style={{fontSize: eng ? '0.875rem' : '0.7rem'}}
+                        >
+                            {buttons.viewStats}
+                        </Button>
+                        <Popover
+                            id="mouse-over-popover"
+                            sx={{
+                                pointerEvents: 'none',
+                                left: 0,
+                                right: 0
+                            }}
+                            open={open}
+                            anchorEl={anchorEl}
+                            anchorOrigin={{
+                                vertical: 'bottom', horizontal: 'center',
+                            }}
+                            transformOrigin={{
+                                vertical: 'bottom', horizontal: 'center'
+                            }}
+                            onClose={handlePopoverClose}
+                            disableRestoreFocus
+                        >
+                            <div className="popup" style={{
+                                background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
+                                display: 'flex',
+                                borderBottom: '1px solid rgb(234, 201, 136)',
+                                borderTop: '1px solid rgb(234, 201, 136)'
+                            }}>
+                                <div style={{display: 'flex'}}>
+                                    <div className="column">
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t1`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {strength}
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t2`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {dexterity}
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t3`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {accuracy}
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t4`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {endurance}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="column">
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d1`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {earth}
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d2`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {air}
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d3`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {water}
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d4`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {fire}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{
+                                    display: 'flex',
+                                    background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
+                                }}>
+                                    <div className="column">
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {title}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="column">
+                                        <div className="row">
+                                            <div className="popup-img">
+                                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`} width="19px"
+                                                     height="19px" alt=""/>
+                                            </div>
+                                            <div className="popup-stat">
+                                                {degree}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </Popover>
+                        <div className="doll-container__doll-footer-side">
+                            <div style={{
+                                color: (degree < 0) && 'white',
+                                fontWeight: (degree < 0) && 'bold',
+                            }}>
+                                {degree}
+                            </div>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`} alt=""
+                                 style={{width: 24, height: 21}}/>
+                        </div>
+                    </div>
+                    <div className="doll-container__doll-reset-buttons">
+                        <Button style={{cursor: 'pointer', width: 80, textAlign: 'center'}} className="button secondary"
+                                onClick={resetTitle}>
+                            {buttons.resetTitle}
+                        </Button>
+                        <Button className="button secondary" onClick={resetDegree}>
+                            {buttons.resetDegree}
+                        </Button>
+                    </div>
                 </div>
             </div>
-            <div style={{display: 'flex', justifyContent: 'space-around', marginBottom: 6}}>
-                <div>
-                    {texts.reset}
-                </div>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-evenly'}}>
-                <Button style={{cursor: 'pointer', width: 80, textAlign: 'center'}} className="button-hover"
-                        onClick={resetTitle}>
-                    {buttons.resetTitle}
-                </Button>
-                <Button style={{cursor: 'pointer', width: 80, textAlign: 'center'}} className="button-hover"
-                        onClick={resetSkills}>
-                    {buttons.resetSkillsShort}
-                </Button>
-                <Button className="button-hover" onClick={resetDegree}>
-                    {buttons.resetDegree}
-                </Button>
-            </div>
-        </div>
-    </div>);
+        </div>);
 };
 
 export default DollContainer;

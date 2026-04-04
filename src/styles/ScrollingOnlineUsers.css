@@ -1,0 +1,78 @@
+.online-container {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+}
+
+.online-users-container {
+    height: 24px;
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    font-weight: bold;
+    width: 100%;
+    /* Убрал width: 100%; если это не нужно, чтобы контейнер не растягивался на всю ширину.
+       Если нужен определенный width, укажите его явно. */
+    /* width: auto; */ /* или фиксированная ширина, если нужна */
+}
+
+.online-user-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Убедитесь, что ширина позволяет тексту быть центрированным или выровненным */
+    white-space: nowrap;
+    transition: transform 0.3s, opacity 0.3s;
+    opacity: 1;
+    transform: translateY(0);
+    height: 24px;
+    display: flex;
+    align-items: center;
+    color: var(--secondary-color);
+}
+
+.online-container__guests {
+    display: flex;
+    gap: 5px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.online-container__guests div {
+    color: var(--secondary-color);
+
+}
+
+/* Состояние для "выплывания": элемент изначально находится ниже и невидимый */
+.online-user-item.slide-in {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+.online-indicator {
+    width: 6px;
+    height: 6px;
+    background-color: green;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+/* Этот класс будет ОТСУТСТВОВАТЬ, чтобы триггернуть переход из slide-in в основное состояние */
+/* .online-user-item.slide-in-active { */
+/* Это было лишним, так как transition сработает, когда класс slide-in будет удален */
+/* } */
+
+
+/* Состояние для "уплывания": элемент перемещается вверх и становится невидимым */
+.online-user-item.slide-out {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+/* Переменная для длительности анимации, чтобы легко менять */
+/* Здесь она уже не нужна, так как длительность прописана напрямую в transition */
+/* .online-user-item {
+    --animation-duration: 0.5s;
+} */

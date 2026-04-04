@@ -1,14 +1,16 @@
 import React, {useState} from 'react';
 import {useDispatch} from "react-redux";
-import '../styles/DollContainer.css';
+import '../styles/stat.css';
 import {
     setAccuracy,
-    setAir, setDegreeLevel,
+    setAir,
+    setDegreeLevel,
     setDexterity,
     setEarth,
     setEndurance,
     setFire,
-    setStrength, setTitleLevel,
+    setStrength,
+    setTitleLevel,
     setWater
 } from "../store/doll/actions";
 
@@ -133,32 +135,28 @@ const Stat = ({statsAvailable, stat, itemStat, reqStat, statName}) => {
             default:
                 break;
         }
+
         setOpacity(0);
     }
 
     return (
-        <div style={{position: 'relative'}} className="number">
-            <div>
+        <div className="stat">
+            <div className="text-secondary">
                 {
                     Number(stat) + Number(itemStat)
                 }
             </div>
-            <input style={{
-                position: 'absolute',
-                top: 1,
-                left: 4,
-                opacity: opacity,
-                width: 24,
-                backgroundColor: 'rgb(234, 201, 136)'
-            }}
+            <input className="input"
+                   type="number"
+                   style={{opacity: opacity}}
                    name={statName}
                    value={value}
                    onChange={handleChange}
                    onClick={handleClick}
                    onBlur={handleBlur}
+                   autoComplete="off"
                    placeholder={(reqStat > 0) ? (reqStat - itemStat) : 0}
             />
-
         </div>
     );
 };

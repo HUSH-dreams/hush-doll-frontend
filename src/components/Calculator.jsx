@@ -1,14 +1,11 @@
-import React, {useState} from 'react';
-import Button from "@mui/material/Button";
-import {useDispatch, useSelector} from "react-redux";
-import {selectButtons, selectTexts} from "../store/lang/selectors";
-import {selectCalculatorError} from "../store/table/selectors";
+import React, {useEffect, useState} from 'react';
+import {useDispatch} from "react-redux";
 import {tableCalculatorErrorSet, tableCalculatorErrorUnset} from "../store/table/actions";
-import CalcError from "./CalcError";
+import {addError} from "../store/error/actions";
+import {useLang} from "../use/lang";
 
-const Calculator = () => {
-    const buttons = useSelector(selectButtons);
-    const texts = useSelector(selectTexts);
+const Calculator = ({close, isUtils = false}) => {
+    const {buttons, texts} = useLang()
     const dispatch = useDispatch();
     const [level, setLevel] = useState('1');
     const [fillingLevel, setFillingLevel] = useState('7');
@@ -17,23 +14,22 @@ const Calculator = () => {
     const [thetimeYellow, setThetimeYellow] = useState('');
     const [thetimeRed, setThetimeRed] = useState('');
     const [thetimeWhite, setThetimeWhite] = useState('');
-    const error = useSelector(selectCalculatorError);
     const url = `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`
-    const calcTime = [
-        ['7:00', '8:00', '8:00', '8:00', '8:00', '8:00', '8:00'],
-        ['7:00', '11:00', '12:30', '12:30', '12:30', '12:30', '12:30'],
-        ['7:00', '11:00', '15:00', '17:00', '17:00', '17:00', '17:00'],
-        ['7:00', '11:00', '15:00', '18:00', '20:00', '20:30', '20:30'],
-        ['7:00', '11:00', '15:00', '18:00', '20:00', '21:00', '23:00'],
-        ['7:00', '11:00', '15:00', '18:00', '20:00', '21:00', '24:00']
-    ]
+    const calcTime = [['7:00', '8:00', '8:00', '8:00', '8:00', '8:00', '8:00'], ['7:00', '11:00', '12:30', '12:30', '12:30', '12:30', '12:30'], ['7:00', '11:00', '15:00', '17:00', '17:00', '17:00', '17:00'], ['7:00', '11:00', '15:00', '18:00', '20:00', '20:30', '20:30'], ['7:00', '11:00', '15:00', '18:00', '20:00', '21:00', '23:00'], ['7:00', '11:00', '15:00', '18:00', '20:00', '21:00', '24:00']]
 
     const calcRed = ['1:00', '1:30', '2:00', '2:30', '3:00', '3:30']
 
     const calcLvls = ['15', '30', '45', '60', '75', '90+']
-    const count = [1,2,3,4,5,6];
+    const count = [1, 2, 3, 4, 5, 6];
+
+    useEffect(() => {
+        if (!!time && !!action && !!level && !!fillingLevel) {
+            handleCalculate()
+        }
+    }, [time, action, level, fillingLevel])
 
     const validateTime = () => {
+
         if (time) {
             const timeRegex = /\b\d{1,2}(\.|\s|:)\d{2}\b/;
 
@@ -43,10 +39,11 @@ const Calculator = () => {
 
                 setTimeout(() => {
                     dispatch(tableCalculatorErrorSet('Wrong time format. Examples: 18.09, 18 09, 18:09'));
+                    dispatch(addError('Некорректный формат времени. Примеры: 18.09, 18 09, 18:09'))
                     setThetimeRed('');
                     setThetimeYellow('');
                     setThetimeWhite('');
-                },100)
+                }, 100)
             } else {
                 let separator = ':';
 
@@ -68,10 +65,11 @@ const Calculator = () => {
 
                     setTimeout(() => {
                         dispatch(tableCalculatorErrorSet('Wrong time format. Hours: 0 - 23, minutes: 0 - 59'));
+                        dispatch(addError('Некорректный формат времени. Часы: 0 - 23, минуты: 0 - 59'))
                         setThetimeRed('');
                         setThetimeYellow('');
                         setThetimeWhite('');
-                    },100)
+                    }, 100)
                 } else {
                     if (hours.length < 2) {
                         setTime('0' + hours + ':' + minutes);
@@ -104,10 +102,11 @@ const Calculator = () => {
     }
 
     const handleCalculate = () => {
-        dispatch(tableCalculatorErrorUnset());
+        let error;
 
         if (!time) {
-            dispatch(tableCalculatorErrorSet('Enter valid time'));
+            error = 'Введите правильное время'
+            dispatch(addError(error))
             setThetimeRed('');
             setThetimeYellow('');
             setThetimeWhite('');
@@ -115,13 +114,14 @@ const Calculator = () => {
         }
 
         if (!fillingLevel) {
-            dispatch(tableCalculatorErrorSet('Enter valid filling level'));
+            error = 'Введите правильный уровень ливы'
+            dispatch(addError(error))
             setThetimeRed('');
             setThetimeYellow('');
             setThetimeWhite('');
             return;
         }
-        
+
         const thetime = new Date();
 
         const hours = time.split(':')[0];
@@ -333,96 +333,120 @@ const Calculator = () => {
         let whiteHours = newWhite.getHours().toString().padStart(2, "0");
         let whiteMinutes = newWhite.getMinutes().toString().padStart(2, "0");
 
-        setThetimeRed(redHours + ":" + redMinutes);
-        setThetimeYellow(yellowHours + ":" + yellowMinutes);
-        setThetimeWhite(whiteHours + ":" + whiteMinutes);
+        const isNumberNan = isNaN(redHours);
+
+        setThetimeRed(isNumberNan ? '-' : redHours + ":" + redMinutes);
+        setThetimeYellow(isNumberNan ? '-' : yellowHours + ":" + yellowMinutes);
+        setThetimeWhite(isNumberNan ? '-' : whiteHours + ":" + whiteMinutes);
     }
 
-    return (
-        <div style={{background: url, backgroundSize: 'cover'}}
-            className="table-calculator">
-            <h3 className="table-calculator__header">Filling calculator</h3>
-            <div className="table-calculator__calculator-headers">
-                <span>{texts.time}</span>
-                <span>{texts.level}</span>
-                <span>{texts.level}</span>
-                <span>Action</span>
-                <span>Yellow</span>
-                <span>Red</span>
-                <span>White</span>
-                <span></span>
+    const handleChangeTime = (target) => {
+        setTime(target.value)
+
+        setTimeout(() => {
+            if (target.value.length > 4) {
+                target.blur();
+            }
+        },50)
+    }
+
+    return (<>
+        <div className="calculator-card">
+            <div className="table-calculator__header first"
+                 style={{background: url, backgroundRepeat: "repeat"}}>{texts.fillingCalculator}
+                {!isUtils && <div className="table-calculator__close" onClick={close}>&times;</div>}
             </div>
-            <div className="table-calculator__calculator-body">
-                <div>
-                    <input style={{
-                        background: url
-                    }} className="table-castle__edit-input" type="text" value={time}
-                         onBlur={() => validateTime()}
-                         onClick={() => setTime('')}
-                         onChange={e => setTime(e.target.value)}/>
+            <div className="table-calculator__body">
+                <div className="table-calculator__calculator-headers">
+                    <div className="table-calculator__headers-inputs">
+                        <span>{texts.time}</span>
+                        <span>{texts.level}</span>
+                        <span>{texts.fillingLevel}</span>
+                        <span>{texts.action}</span>
+                    </div>
+                    <div className="table-calculator__inputs">
+                        <div>
+                            <input style={{
+                                background: url
+                            }} className="input" type="text" value={time}
+                                   onBlur={() => validateTime()}
+                                   onClick={() => setTime('')}
+                                   onChange={e => handleChangeTime(e.target)}/>
+                        </div>
+                        <div>
+                            <select id="select-castle-lvl" className="select outlined castle"
+                                    style={{
+                                        background: url
+                                    }}
+                                    value={level}
+                                    onChange={e => setLevel(e.target.value)}
+                            >
+                                <option value="1">90+</option>
+                                <option value="2">75</option>
+                                <option value="3">60</option>
+                                <option value="4">45</option>
+                                <option value="5">30</option>
+                                <option value="6">15</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="select-castle-lvl" className="select outlined castle"
+                                    style={{
+                                        background: url
+                                    }}
+                                    value={fillingLevel}
+                                    onChange={e => setFillingLevel(e.target.value)}
+                            >
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="select-castle-lvl" className="select outlined castle"
+                                    style={{
+                                        background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
+                                    }}
+                                    value={action}
+                                    onChange={e => setAction(e.target.value)}
+                            >
+                                <option value="1">{texts.actionBlue}</option>
+                                <option value="2">{texts.actionYellow}</option>
+                                <option value="3">{texts.actionRed}</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <select id="select-castle-lvl" className="table-castle__edit-input table-castle__edit-select"
-                        style={{
-                            background: url
-                        }}
-                            value={level}
-                            onChange={e => setLevel(e.target.value)}
-                    >
-                        <option value="1">90+</option>
-                        <option value="2">75</option>
-                        <option value="3">60</option>
-                        <option value="4">45</option>
-                        <option value="5">30</option>
-                        <option value="6">15</option>
-                    </select>
-                </div>
-                <div>
-                    <input type="text"
-                           style={{background: url}}
-                           className="table-castle__edit-input"
-                           onClick={clearFillingLvl}
-                           value={fillingLevel}
-                           onChange={e => setFillingLevel(e.target.value)}
-                           onBlur={validateFillingLvl}
-                    />
-                </div>
-                <div>
-                    <select id="select-castle-lvl" className="table-castle__edit-input table-castle__edit-select"
-                            style={{
-                                background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                            }}
-                            value={action}
-                            onChange={e => setAction(e.target.value)}
-                    >
-                        <option value="1">Залит</option>
-                        <option value="2">Пожелтел</option>
-                        <option value="3">Покраснел</option>
-                    </select>
-                </div>
-                <div>{thetimeYellow}</div>
-                <div>{thetimeRed}</div>
-                <div>{thetimeWhite}</div>
-                <div>
-                    <Button className="button-hover"
-                            onClick={handleCalculate}>{buttons.confirm}</Button>
+                <div className="table-calculator__calculator-headers">
+                    <div className="table-calculator__calculator-output">
+                        <div className="text-yellow bold">{thetimeYellow ? thetimeYellow : '-'}</div>
+                        <div className="text-red bold">{!!thetimeRed ? thetimeRed : '-'}</div>
+                        <div className="text-secondary bold">{!!thetimeWhite ? thetimeWhite : '-'}</div>
+                    </div>
                 </div>
             </div>
-            {error && <CalcError message={error} action={tableCalculatorErrorUnset}/>}
-            <h3 className="table-calculator__table-header">Filling table</h3>
-            <div className="table-calculator__table-headers">
-                <div></div>
-                <div>1</div>
-                <div>2</div>
-                <div>3</div>
-                <div>4</div>
-                <div>5</div>
-                <div>6</div>
-                <div>7</div>
-                <div>Red</div>
-            </div>
-            {
-                count.map((time, index) => {
+        </div>
+
+        <div className="calculator-card">
+            <div className="table-calculator__header second"
+                 style={{background: url, backgroundRepeat: "repeat"}}>{texts.fillingTable}</div>
+            <div className="table-calculator__body">
+                <div className="table-calculator__table-headers">
+                    <div></div>
+                    <div>1</div>
+                    <div>2</div>
+                    <div>3</div>
+                    <div>4</div>
+                    <div>5</div>
+                    <div>6</div>
+                    <div>7</div>
+                    <div>{texts.red}</div>
+                </div>
+                {count.map((time, index) => {
                     return (<div className="table-calculator__table-rows">
                         <div className="table-calculator__table-rows--bold">{calcLvls[index]}</div>
                         {calcTime[index].map(thisTime => {
@@ -430,10 +454,10 @@ const Calculator = () => {
                         })}
                         <div className="text-red">{calcRed[index]}</div>
                     </div>)
-                })
-            }
+                })}
+            </div>
         </div>
-    );
+    </>);
 };
 
 export default Calculator;
