@@ -1,3 +1,9 @@
+import {addError, addMessage, addNewError, addNewMessage, addNewNotification, addNotification} from "../error/actions";
+import { selectToken } from '../user/selectors'; // Используем этот селектор
+import {selectDefaultDolls, selectDollName, selectDolls, selectOtherDolls} from './selectors';
+import { handleSelect } from "../../components/Dolls";
+import { createBrowserHistory } from 'history';
+
 export const DOLL_SAVE_START = "DOLL::DOLL_SAVE_START";
 export const DOLL_SAVE_SUCCESS = "DOLL::DOLL_SAVE_SUCCESS";
 export const DOLL_SAVE_ERROR = "DOLL::DOLL_SAVE_ERROR";
@@ -154,6 +160,43 @@ export const DOLL_UNSET_OTHER_DOLL = "DOLL::DOLL_UNSET_OTHER_DOLL";
 export const DOLL_START = "DOLL::DOLL_START";
 export const DOLL_SUCCESS = "DOLL::DOLL_SUCCESS";
 export const DOLL_ERROR = "DOLL::DOLL_ERROR";
+export const DOLL_SET_DOLL_NAME = "DOLL::DOLL_SET_DOLL_NAME";
+export const DOLL_UNSET_DOLL_NAME = "DOLL::DOLL_UNSET_DOLL_NAME";
+export const DOLL_LOGOUT = "DOLL::DOLL_LOGOUT"
+export const DOLL_DETAILS_START = "DOLL::DOLL_DETAILS_START";
+export const DOLL_DETAILS_SUCCESS = "DOLL::DOLL_DETAILS_SUCCESS";
+export const DOLL_DETAILS_ERROR = "DOLL::DOLL_DETAILS_ERROR";
+
+export const selectDoll = (doll) => ({
+    type: DOLL_SELECT_SUCCESS,
+    payload: doll
+});
+
+export const dollDetailsStart = () => ({
+    type: DOLL_DETAILS_START
+})
+
+export const dollDetailsSuccess = (data) => ({
+    type: DOLL_DETAILS_SUCCESS,
+    payload: data
+})
+
+export const dollDetailsError = (error) => ({
+    type: DOLL_DETAILS_ERROR,
+    payload: error
+})
+
+export const dollLogout = () => ({
+    type: DOLL_LOGOUT
+})
+export const dollSetDollName = (name) => ({
+    type: DOLL_SET_DOLL_NAME,
+    payload: name
+})
+
+export const dollUnetDollName = () => ({
+    type: DOLL_UNSET_DOLL_NAME
+})
 
 export const setOtherDoll = (data) => ({
     type: DOLL_SET_OTHER_DOLL,
@@ -945,8 +988,10 @@ export const dollSaveInitiate = (payload, token) => {
             const data = await response.json();
 
             if (!data.success) {
+                dispatch(addError(data.reason))
                 dispatch(dollSaveError(data.reason))
             } else {
+                dispatch(addNewMessage(`Кукла ${payload.name} сохранена`))
                 dispatch(dollSaveSuccess(data));
                 dispatch(dollsInitiate(token));
             }
@@ -971,6 +1016,7 @@ export const dollsInitiate = (token) => {
             const data = await response.json();
 
             if (!data.success) {
+                dispatch(addError(data.reason))
                 dispatch(dollsError(data.reason))
             } else {
                 dispatch(dollsSuccess(data.data));
@@ -982,7 +1028,7 @@ export const dollsInitiate = (token) => {
     }
 }
 
-export const dollSetShare = (token, id, payload) => {
+export const dollSetShare = (token, id, payload, name) => {
     return async dispatch => {
         dispatch(dollsStart());
         try {
@@ -992,15 +1038,17 @@ export const dollSetShare = (token, id, payload) => {
                     "Authorization": "Bearer " + token
                 },
                 body: JSON.stringify({
-                    "share": payload
+                    "share": payload === false ? 'private' : 'public'
                 })
             })
 
             const data = await response.json();
 
             if (!data.success) {
+                dispatch(addError(data.reason))
                 dispatch(dollsError(data.reason))
             } else {
+                dispatch(addMessage(`Кукле ${name} установлена видимость ${payload}`))
                 dispatch(dollsSuccess(data.data));
             }
         } catch (e) {
@@ -1021,6 +1069,7 @@ export const dollGetShare = (payload) => {
             const data = await response.json();
 
             if (!data.success) {
+                dispatch(addError(data.reason))
                 dispatch(dollError(data.reason))
             } else {
                 dispatch(dollSuccess(data.data));
@@ -1046,9 +1095,11 @@ export const dollSetShareString = (token, payload) => {
             const data = await response.json();
 
             if (!data.success) {
+                dispatch(addError(data.reason))
                 dispatch(dollsError(data.reason))
             } else {
                 dispatch(dollsSuccess(data.data));
+                dispatch(addMessage(`Кукла добавлена в список прочих кукол`))
             }
         } catch (e) {
             dispatch(dollsError(e.toString()));
@@ -1057,7 +1108,7 @@ export const dollSetShareString = (token, payload) => {
     }
 }
 
-export const dollSetName = (token, id, payload) => {
+export const dollSetName = (token, id, payload, name) => {
     return async dispatch => {
         dispatch(dollsStart());
         try {
@@ -1074,8 +1125,10 @@ export const dollSetName = (token, id, payload) => {
             const data = await response.json();
 
             if (!data.success) {
+                dispatch(addError(data.reason))
                 dispatch(dollsError(data.reason))
             } else {
+                dispatch(addMessage(`Кукле ${name} установлено новое имя ${payload}`))
                 dispatch(dollsSuccess(data.data));
             }
         } catch (e) {
@@ -1085,7 +1138,7 @@ export const dollSetName = (token, id, payload) => {
     }
 }
 
-export const dollDeleteInitiate = (token, id) => {
+export const dollDeleteInitiate = (token, id, name) => {
     return async dispatch => {
         dispatch(dollsDeleteStart());
         try {
@@ -1097,8 +1150,10 @@ export const dollDeleteInitiate = (token, id) => {
             });
             const data = await response.json();
             if (!data.success) {
+                dispatch(addError(data.reason))
                 dispatch(dollsDeleteError(data.reason))
             } else {
+                dispatch(addMessage(`Ваша кукла ${name} удалена`))
                 dispatch(dollsDeleteSuccess(data.data));
             }
         } catch (e) {
@@ -1108,7 +1163,7 @@ export const dollDeleteInitiate = (token, id) => {
     }
 }
 
-export const dollDeleteOther = (token, string) => {
+export const dollDeleteOther = (token, string, name) => {
     return async dispatch => {
         dispatch(dollsDeleteStart());
         try {
@@ -1122,9 +1177,11 @@ export const dollDeleteOther = (token, string) => {
             const data = await response.json();
 
             if (!data.success) {
+                dispatch(addError(data.reason))
                 dispatch(dollsDeleteError(data.reason))
             } else {
                 dispatch(dollsDeleteSuccess(data.data));
+                dispatch(addMessage(`Кукла ${name} удалена из списка прочих кукол`))
             }
         } catch (e) {
             dispatch(dollsDeleteError(e.toString()));
@@ -1132,3 +1189,88 @@ export const dollDeleteOther = (token, string) => {
         }
     }
 }
+
+export const dollDetailsInitiate = (token, dollId, defaultDoll = '') => {
+    return async (dispatch, getState) => {
+        dispatch(dollDetailsStart());
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/dolls/${defaultDoll}${dollId}`, {
+                method: 'GET',
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                dispatch(addError(data.reason));
+                dispatch(dollDetailsError(data.reason));
+                return null;
+            } else {
+                dispatch(dollDetailsSuccess(data.data.doll));
+                return data.data.doll;
+            }
+        } catch (e) {
+            dispatch(dollDetailsError(e.toString()));
+            console.log(e.toString());
+            return null;
+        }
+    }
+};
+
+const history = createBrowserHistory();
+
+export const loadDollByRouteName = (name, dollType) => {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const token = selectToken(state);
+
+        if (!token && dollType !== 'default') {
+            dispatch(addNewNotification('Для просмотра куклы необходима авторизация'));
+            dispatch(dollDetailsError('Нет авторизации.'));
+            return;
+        }
+
+        const dolls = selectDolls(state);
+        const otherDolls = selectOtherDolls(state);
+        const defaultDolls = selectDefaultDolls(state);
+        const selectedDollName = selectDollName(state);
+
+        if (!dolls || !otherDolls) {
+            dispatch(addError('Списки кукол не загружены. Пожалуйста, попробуйте позже.'));
+            dispatch(dollDetailsError('Списки кукол не загружены.'));
+            return;
+        }
+
+        const normalizedName = name.replaceAll(' ', '-').replaceAll('\\', '-').replaceAll('/', '-').toLowerCase();
+
+        let targetDoll = null;
+        let searchSource = '';
+
+        if (dollType === 'my') {
+            targetDoll = dolls.find(d => d.name.replaceAll(' ', '-').replaceAll('/', '-').toLowerCase() === normalizedName);
+            searchSource = 'ваших';
+        } else if (dollType === 'shared') {
+            targetDoll = otherDolls.find(d => d.name.replaceAll(' ', '-').replaceAll('\\', '-').replaceAll('/', '-').toLowerCase() === normalizedName);
+            searchSource = 'чужих';
+        } else if (dollType === 'default') {
+            targetDoll = defaultDolls.find(d => d.name.replaceAll(' ', '-').replaceAll('\\', '-').replaceAll('/', '-').toLowerCase() === normalizedName);
+            searchSource = 'стандартных';
+        }
+
+        if (targetDoll) {
+            if (selectedDollName !== targetDoll.name) {
+                handleSelect(dispatch, targetDoll);
+
+                await dispatch(dollDetailsInitiate(token, targetDoll.id, dollType === 'default' ? 'default/' : ''));
+
+            }
+        } else {
+            dispatch(dollDetailsError(`Кукла с именем "${name}" не найдена среди ${searchSource} кукол.`));
+            dispatch(addError(`Кукла с именем "${name}" не найдена среди ${searchSource} кукол.`));
+            history.push('/doll')
+        }
+    };
+};

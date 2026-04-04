@@ -1,14 +1,18 @@
-import {Route, Routes} from 'react-router-dom';
-
-import {Provider} from "react-redux";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {Provider, useSelector} from "react-redux";
 import {store, persistor} from "../store/configureStore";
 import {PersistGate} from "redux-persist/integration/react";
 import Layout from "./Layout";
 import Home from "./Home";
-import DollSiteContainer from "./DollSiteContainer";
-import TableSiteContainer from "./TableSiteContainer";
-import EmailTest from "./EmailTest";
+import DollPage from "./DollPage";
+import TablePage from "./TablePage";
 import '../styles/main.css'
+import Chat from "./Chat";
+import RecipesPage from "./RecipesPage";
+import HomePage from "./HomePage";
+import MapPage from "./MapPage";
+import StatsPage from "./StatsPage";
+import UtilsPage from "./UtilsPage";
 
 function App() {
     return (
@@ -16,16 +20,26 @@ function App() {
             <PersistGate persistor={persistor}>
                 <Routes>
                     <Route path='/' element={<Layout/>} >
-                        <Route index element={<DollSiteContainer/>} />
-                        <Route path='/doll' element={<DollSiteContainer/>} >
-                            <Route path='/doll/:string' element={<DollSiteContainer/>} />
+                        <Route index element={<HomePage/>} />
+                        <Route path='/doll' element={<DollPage/>} >
+                            <Route path='/doll/:string' element={<DollPage/>} />
+                            <Route path='/doll/my/:myName' element={<DollPage/>} />
+                            <Route path='/doll/shared/:otherName' element={<DollPage/>} />
+                            <Route path='/doll/default/:defaultName' element={<DollPage/>} />
                         </Route>
-                        <Route path='/table' element={<TableSiteContainer/>}>
-                            <Route path='/table/:tableName' element={<TableSiteContainer/>}/>
-                            <Route path='/table/:tableName/:shareString' element={<TableSiteContainer/>}/>
+                        <Route path='/table' element={<TablePage/>}>
+                            <Route path='/table/:tableName' element={<TablePage/>}/>
+                            <Route path='/table/:tableName/:shareString' element={<TablePage/>}/>
                         </Route>
-                        <Route path='/test' element={<EmailTest />} />
-                        <Route path='*' element={<Home />} />
+                        <Route path='/stats' element={<StatsPage/>}>
+                            <Route path='/stats/:day' element={<StatsPage />}/>
+                        </Route>
+                        <Route path='/utils' element={<UtilsPage/>}>
+                            <Route path='/utils/:util' element={<UtilsPage />}/>
+                        </Route>
+                        <Route path='/recipes' element={<RecipesPage />}/>
+                        <Route path='/maps' element={<MapPage />}/>
+                        <Route path='*' element={<HomePage />} />
                     </Route>
                 </Routes>
             </PersistGate>

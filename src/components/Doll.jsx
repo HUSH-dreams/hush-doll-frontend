@@ -1,42 +1,59 @@
-import React, {useState} from 'react';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
+import React, {useEffect, useRef, useState} from 'react';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import Stack from '@mui/material/Stack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import {useDispatch, useSelector} from 'react-redux';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
-import '../styles/Doll.css';
 import '../styles/UserContainer.css';
-import {dollDeleteInitiate, dollDeleteOther, dollSetName, dollSetShare} from '../store/doll/actions.js';
+import '../styles/doll.css';
+import {
+    dollDeleteInitiate,
+    dollDeleteOther,
+    dollSetName,
+    dollSetShare,
+    loadDollByRouteName,
+    dollDetailsInitiate
+} from '../store/doll/actions.js';
+import {dollDetailsInitiate as rightDollDetailsInitiate,
+    dollSetDollName as rightDollSetDollName,
+    dollsInitiate as rightDollsInitiate,
+    selectDoll as rightSelectDoll
+} from '../store/rightDoll/actions.js';
+
 import Button from "@mui/material/Button";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import {selectButtons, selectInputs, selectLang, selectTexts} from "../store/lang/selectors";
+import {selectLang} from "../store/lang/selectors";
 import {useNavigate} from "react-router-dom";
 import {handleSelect} from "./Dolls";
+import {addMessage, addNewMessage} from "../store/error/actions";
+import {useLang} from "../use/lang";
+import {selectDollName} from "../store/doll/selectors";
 
-const Doll = ({doll, index, token, list}) => {
+const Doll = ({doll, index, token, list, delayIndex, onSelect, isDefault = false, isUtils = false, setUtils = null, side = ''}) => {
     const [anchor, setAnchor] = useState(null);
     const [display, setDisplay] = useState('none');
     const open = Boolean(anchor);
     const eng = useSelector(selectLang);
-    const texts = useSelector(selectTexts);
-    const inputs = useSelector(selectInputs);
-    const buttons = useSelector(selectButtons);
+    const {texts, inputs, buttons} = useLang()
     const id = open ? 'simple-popup' : undefined;
     const [dollPublic, setDollPublic] = useState(doll.share);
     const [name, setName] = useState('');
     const [newName, setNewName] = useState(null);
     const [dollDelete, setDollDelete] = useState(null);
-    const [isCopied, setIsCopied] = useState(false);
-
+    const selectedName = useSelector(selectDollName);
+    const url = `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`
+    const url2 = `url(${process.env.REACT_APP_BACKEND_URL}/image/background) repeat center`
+    const dollRef = useRef();
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     let titleText;
     let degreeText;
+
+    useEffect(() => {
+        dollRef.current.style.animationDelay = `${delayIndex * 50}ms`;
+    },[])
 
     switch (doll.titleGreatness) {
         case 1:
@@ -73,6 +90,7 @@ const Doll = ({doll, index, token, list}) => {
     }
 
     const handleClick = (event) => {
+        event.stopPropagation()
         setAnchor(anchor ? null : event.currentTarget);
         setDisplay(display === 'none' ? 'block' : 'none');
         setNewName(null);
@@ -82,13 +100,13 @@ const Doll = ({doll, index, token, list}) => {
     };
 
     const handleDelete = () => {
-        dispatch(dollDeleteInitiate(token, doll.id));
+        dispatch(dollDeleteInitiate(token, doll.id, doll.name));
         setDisplay('none');
         navigate('/doll');
     }
 
     const handleDeleteOther = () => {
-        dispatch(dollDeleteOther(token, doll.shareString));
+        dispatch(dollDeleteOther(token, doll.shareString, doll.name));
         setDisplay('none');
         navigate('/doll');
     }
@@ -99,252 +117,195 @@ const Doll = ({doll, index, token, list}) => {
 
     const handleChangeShare = (event) => {
         if (event.target.id === 'doll-public') {
-            setDollPublic('public');
+            setDollPublic(true);
         } else {
-            setDollPublic('private');
+            setDollPublic(false);
         }
     };
 
     const handleSave = () => {
         if (doll.share !== dollPublic) {
-            dispatch(dollSetShare(token, doll.id, dollPublic));
+            dispatch(dollSetShare(token, doll.id, dollPublic, doll.name));
         }
 
         if (newName && newName !== doll.name) {
-            dispatch(dollSetName(token, doll.id, newName));
+            dispatch(dollSetName(token, doll.id, newName, doll.name));
         }
     }
 
     const handleSelectDoll = () => {
-        handleSelect(dispatch, doll);
+        const string = doll.name.replaceAll(" ", "-").replaceAll('\\', '-').replaceAll('/', '-').replaceAll('\\', '-').toLowerCase();
+        const normalizedName = selectedName.replaceAll(" ", "-").replaceAll('\\', '-').replaceAll('/', '-').replaceAll('\\', '-').toLowerCase();
+
+        if (string === normalizedName && !isUtils) {
+            return;
+        }
+
+        if (isUtils) {
+            if (side === 'right') {
+                if (isDefault) {
+                    dispatch(rightDollDetailsInitiate(token, doll.id, 'default/'));
+                } else {
+                    dispatch(rightDollDetailsInitiate(token, doll.id));
+                }
+
+            } else {
+                if (isDefault) {
+                    dispatch(dollDetailsInitiate(token, doll.id, 'default/'));
+                } else {
+                    dispatch(dollDetailsInitiate(token, doll.id));
+                }
+
+            }
+
+            setUtils(string);
+
+            return;
+        }
+
+        if (list === 'dolls') {
+            navigate(`/doll/my/${string}`);
+        } else if (list === 'other-dolls') {
+            navigate(`/doll/shared/${string}`);
+        } else if (list === 'default-dolls') {
+            navigate(`/doll/default/${string}`);
+        }
     }
 
     const copyTextToClipboard = async () => {
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 3000);
+        dispatch(addMessage('Ссылка для доступа к кукле скопирована'))
     };
 
-    return (
-        <div>
+    return (<>
             <div className="modal" style={{display: display}} onClick={handleClick}></div>
-            <Paper className="list-item" style={{
-                background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                boxShadow: '0px 0px 7px -1px rgb(234, 201, 136)'
-            }} elevation={3}
-                   sx={{mb: 2, display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                <Stack direction="column" sx={{alignSelf: 'center', cursor: 'pointer', p: 1.5, pr: 0, width: '80%'}}
-                       onClick={handleSelectDoll}>
-                    <Stack direction="row" sx={{minHeight: 30}}>
-                        <Typography className="text" sx={{alignSelf: 'center'}}
-                                    color='rgb(234, 201, 136)'>{index + 1}.&nbsp;</Typography>
-                        <Typography className="text"
-                                    sx={{fontWeight: 'bold',
-                                        alignSelf: 'center',
-                                        mr: 1,
-                                        overflow: 'hidden',
-                                        whiteSpace: 'nowrap',
-                                        textOverflow: 'ellipsis'}}
-                                    color='rgb(234, 201, 136)'>{doll.name}</Typography>
-                    </Stack>
-                    <Stack direction="row" sx={{minHeight: 30}}>
-                        <Typography className="text" sx={{alignSelf: 'center', mr: 0.5}}
-                                    color='rgb(234, 201, 136)'>
-                            {doll.titleLevel}{titleText} / {doll.degreeLevel}{degreeText} - </Typography>
-                        {doll.professionIcon && (
-                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/${doll.professionIcon}`}
-                                 style={{width: 30, height: 30, alignSelf: 'center'}}
-                                 alt="profession icon"/>)}
-                        <Typography className="text" sx={{alignSelf: 'center', color: 'rgb(234, 201, 136)'}}
-                                    color='rgb(234, 201, 136)'>
-                            {doll.professionNameEng ? ((eng && doll.professionNameEng)
-                                || (!eng && doll.professionNameRu)
-                            ) : ('No profession')
-                            }
-                        </Typography>
-                    </Stack>
-                </Stack>
-                <Stack
-                    sx={{display: 'flex', justifyContent: 'space-around', flexDirection: 'column', width: '15%'}}>
-                    <IconButton className="text trash" sx={{height: 30, width: 30, cursor: 'pointer'}}
-                                aria-label="delete"
-                                aria-describedby={id} type="button" onClick={handleClick}>
-                        {
-                            list === 'dolls' ? (<MenuIcon/>)
-                                : (<DeleteIcon/>)
-                        }
-                    </IconButton>
-                </Stack>
-            </Paper>
-            <div style={{
-                width: '84%',
-                display: display,
-                position: 'absolute',
-                top: 138,
-                right: '8%',
-                zIndex: 10,
-                boxShadow: '0px 0px 10px 2px white',
-                borderRadius: 5
-            }}>
+            <div className="doll" ref={dollRef} style={{
+                background: url2
+            }} onClick={handleSelectDoll}>
+                <div className={isDefault ? "doll__left default" : "doll__left"}>
+                    <span><b>{doll.name}</b></span>
+                    <div>{doll.titleLevel}{titleText} / {doll.degreeLevel}{degreeText}
+                        {doll.professionIcon && (<>&nbsp;-<img src={`${process.env.REACT_APP_BACKEND_URL}/image/${doll.professionIcon}`}
+                                                                     alt="profession icon" /></>
+                            )}
+                            <b>{doll.professionNameEng &&
+                                ((eng && doll.professionNameEng) || (!eng && doll.professionNameRu))}</b>
+                        </div>
+                </div>
                 {
-                    list === 'dolls' ? (
-                        <div style={{display: 'flex', flexDirection: 'column'}}>
-                            <div style={{
-                                background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                                padding: 10,
-                                borderRadius: '5px 5px 0 0',
-                                color: 'white',
-                                display: 'flex',
-                                justifyContent: 'space-around',
-                                overflow: 'hidden',
-                                whiteSpace: 'nowrap',
-                                textOverflow: 'ellipsis',
-                                width: '90%'
-                            }}>
-                                {doll.name}
-                            </div>
-                            <div style={{
-                                backgroundColor: 'rgb(234, 201, 136)', color: 'rgb(36,33,29)', padding: 16,
-                                borderRadius: '0 0 5px 5px'
-                            }}>
-                                {!newName ? (<div style={{display: 'flex', flexDirection: 'column'}}>
-                                    <label htmlFor={"change-name-" + doll.id}>{texts.changeName}</label>
-                                    <input style={{
-                                        padding: 8,
-                                        border: '2px solid rgb(36,33,29)',
-                                        borderRadius: 5,
-                                        margin: '16px 0',
-                                        backgroundColor: 'inherit'
-                                    }}
-                                           name={"change-name-" +doll.id}
-                                           id={"change-name-" + doll.id}
-                                           placeholder={inputs.name}
-                                           value={name}
-                                           type="text"
-                                           onChange={e => setName(e.target.value)}
-                                           onClick={e => setName('')}
-                                    />
-                                    <Button className="button-hover-dark" onClick={handleChangeName}>
-                                        {buttons.setName}
-                                    </Button>
-                                </div>) : (
-                                    <div style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-around'
-                                    }}>
-                                        <div style={{marginBottom: 16}}>{texts.newName} <b
-                                            style={{color: 'white', fontWeight: 'bold'}}>{newName}</b></div>
-                                        <Button className="button-hover-dark"
-                                                onClick={e => setNewName(null)}>
-                                            {buttons.cancel}
-                                        </Button>
-                                    </div>)
-                                }
-                                <div style={{
-                                    display: 'flex', overflow: 'hidden',
-                                    justifyContent: 'space-around', flexDirection: 'column', margin: '16px 0'
-                                }}>
-                                    {
-                                        doll.share === 'public' && (
-                                            <div style={{display: 'flex', flexDirection: 'column'}}>
-                                                <div style={{
-                                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                                    marginBottom: 16
-                                                }}>
-                                                    <div className="share-link">
-                                                        {process.env.REACT_APP_FRONTEND_URL + '/doll/' + doll.shareString}
-                                                    </div>
-                                                    <CopyToClipboard
-                                                        text={`${process.env.REACT_APP_FRONTEND_URL}/doll/${doll.shareString}`}
-                                                        onCopy={copyTextToClipboard}>
-                                                        <ContentCopyIcon style={{marginLeft: 10, cursor: 'pointer'}} />
-                                                    </CopyToClipboard>
-                                                </div>
-                                                {
-                                                    isCopied && <span style={{color: 'white', marginBottom: 16}}>{texts.copied}</span>
-                                                }
-                                            </div>)
-                                    }
-                                    <div style={{display: 'flex', justifyContent: 'space-around'}}>
-                                        <div>
-                                            <Button id="doll-private"
-                                                    className={dollPublic === 'private' ? "share-toggle share-toggle-left share-toggle-selected" : "share-toggle share-toggle-left"}
-                                                    onClick={handleChangeShare}>
-                                                {buttons.private}
-                                            </Button>
-                                            <Button id="doll-public"
-                                                    className={dollPublic === 'public' ? "share-toggle share-toggle-right share-toggle-selected" : "share-toggle share-toggle-right"}
-                                                    onClick={handleChangeShare}>
-                                                {buttons.public}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                                {!dollDelete ? (<div style={{display: 'flex', justifyContent: 'space-evenly'}}>
-                                    <IconButton className="text-dark trash-dark"
-                                                sx={{height: 30, width: 30, cursor: 'pointer'}}
-                                                aria-label="save" type="button"
-                                                onClick={handleSave}>
-                                        <SaveIcon/>
-                                    </IconButton>
-                                    <IconButton className="text-dark trash-dark"
-                                                sx={{height: 30, width: 30, cursor: 'pointer'}}
-                                                aria-label="delete"
-                                                aria-describedby={id} type="button" onClick={e => setDollDelete(true)}>
-                                        <DeleteIcon/>
-                                    </IconButton>
-                                </div>) : (<div>
-                                        <div>
-                                            {texts.deleteDoll}
-                                            <b style={{color: 'white', fontWeight: 'bold'}}>{doll.name}</b>
-                                            {texts.doll}
-                                        </div>
-                                        <div style={{display: 'flex', justifyContent: 'space-evenly', marginTop: 16}}>
-                                            <Button className="button-hover-dark"
-                                                    onClick={handleDelete}>{buttons.confirm}</Button>
-                                            <Button className="button-hover-dark"
-                                                    onClick={handleClick}>{buttons.cancel}</Button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div style={{display: 'flex', flexDirection: 'column'}}>
-                            <div style={{
-                                background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                                padding: 16,
-                                borderRadius: '5px 5px 0 0',
-                                color: 'white',
-                                display: 'flex',
-                                justifyContent: 'space-around'
-                            }}>
-                                <b>{doll.name}</b>
-                            </div>
-                            <div style={{
-                                backgroundColor: 'rgb(234, 201, 136)',
-                                color: 'rgb(36,33,29)',
-                                padding: 16,
-                                borderRadius: '0 0 5px 5px'
-                            }}>
-                                <div>
-                                    {texts.deleteOther}
-                                    <b style={{color: 'white', fontWeight: 'bold'}}>{doll.name}</b>
-                                    {texts.deleteOtherFromList}
-                                </div>
-                                <div style={{display: 'flex', justifyContent: 'space-evenly', marginTop: 16}}>
-                                    <Button className="button-hover-dark"
-                                            onClick={handleDeleteOther}>{buttons.confirm}</Button>
-                                    <Button className="button-hover-dark"
-                                            onClick={handleClick}>{buttons.cancel}</Button>
-                                </div>
-                            </div>
-                        </div>
-                    )
+                    !isDefault && <div className="doll__right">
+                        <IconButton className="text trash" sx={{height: 30, width: 30, cursor: 'pointer'}}
+                                    aria-label="delete"
+                                    aria-describedby={id} type="button" onClick={handleClick}>
+                            {list === 'dolls' ? (<MenuIcon/>) : (<DeleteIcon/>)}
+                        </IconButton>
+                    </div>
                 }
             </div>
-        </div>
-    );
+            {list !== 'default-dolls' && <div className="doll--popup" style={{display: display}}>
+                {list === 'dolls' ? (<div className="doll--owner">
+                    <div className="doll--owner__header"
+                         style={{
+                             background: url,
+                         }}>
+                        {doll.name}
+                    </div>
+                    <div className="doll--owner__body">
+                        {!newName ? (<>
+                            <label htmlFor={"change-name-" + doll.id}>{texts.changeName}</label>
+                            <input className="doll--owner__name-input"
+                                   name={"change-name-" + doll.id}
+                                   id={"change-name-" + doll.id}
+                                   placeholder={inputs.name}
+                                   value={name}
+                                   type="text"
+                                   onChange={e => setName(e.target.value)}
+                                   onClick={e => setName('')}
+                            />
+                            <Button className="button" onClick={handleChangeName}>
+                                {buttons.setName}
+                            </Button>
+                        </>) : (<>
+                            <div className="doll--owner__new-name">{texts.newName}
+                                <b>{newName}</b>
+                            </div>
+                            <Button className="button"
+                                    onClick={() => setNewName(null)}>
+                                {buttons.cancel}
+                            </Button>
+                        </>)}
+                        <div className="doll--owner__bottom">
+                            {doll.share && (<>
+                                <div className="doll--popup__copy">
+                                    <div className="copy-link">
+                                        {process.env.REACT_APP_FRONTEND_URL + '/doll/' + doll.shareString}
+                                    </div>
+                                    <CopyToClipboard
+                                        text={`${process.env.REACT_APP_FRONTEND_URL}/doll/${doll.shareString}`}
+                                        onCopy={copyTextToClipboard}>
+                                        <ContentCopyIcon className="copy-button"/>
+                                    </CopyToClipboard>
+                                </div>
+                            </>)}
+                            <div className="doll--owner__privacy">
+                                <Button id="doll-private"
+                                        className={!dollPublic ? "share-toggle share-toggle-left share-toggle-selected" : "share-toggle share-toggle-left"}
+                                        onClick={handleChangeShare}>
+                                    {buttons.private}
+                                </Button>
+                                <Button id="doll-public"
+                                        className={dollPublic ? "share-toggle share-toggle-right share-toggle-selected" : "share-toggle share-toggle-right"}
+                                        onClick={handleChangeShare}>
+                                    {buttons.public}
+                                </Button>
+                            </div>
+                        </div>
+                        {!dollDelete ? (<div className="doll--owner__actions">
+                            <IconButton className="text-dark trash-dark"
+                                        aria-label="save" type="button"
+                                        onClick={handleSave}>
+                                <SaveIcon/>
+                            </IconButton>
+                            <IconButton className="text-dark trash-dark"
+                                        aria-label="delete"
+                                        aria-describedby={id} type="button" onClick={e => setDollDelete(true)}>
+                                <DeleteIcon/>
+                            </IconButton>
+                        </div>) : (<>
+                            <div className="doll--owner__doll-name">
+                                {texts.deleteDoll}
+                                <b className="doll--owner__doll-name">{doll.name}</b>
+                                {texts.doll}
+                            </div>
+                            <div className="doll--owner__actions">
+                                <Button className="button"
+                                        onClick={handleDelete}>{buttons.confirm}</Button>
+                                <Button className="button"
+                                        onClick={handleClick}>{buttons.cancel}</Button>
+                            </div>
+                        </>)}
+                    </div>
+                </div>) : (<div className="doll--not-owner">
+                    <div className="doll--not-owner__header"
+                         style={{background: url}}>
+                        <b>{doll.name}</b>
+                    </div>
+                    <div className="doll--owner__body">
+                        <div className="doll--owner__doll-name">
+                            {texts.deleteOther}
+                            <b className="doll--owner__doll-name">{doll.name}</b>
+                            {texts.deleteOtherFromList}
+                        </div>
+                        <div className="doll--owner__actions">
+                            <Button className="button"
+                                    onClick={handleDeleteOther}>{buttons.confirm}</Button>
+                            <Button className="button"
+                                    onClick={handleClick}>{buttons.cancel}</Button>
+                        </div>
+                    </div>
+
+                </div>)}
+            </div>}
+        </>);
 };
 
 export default Doll;

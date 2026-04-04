@@ -5,9 +5,12 @@ import {selectRegisterError, selectUser} from '../store/user/selectors';
 import {registerInitiate} from '../store/user/actions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import '../styles/auth.css'
 import {selectButtons, selectErrors, selectInputs, selectTexts} from "../store/lang/selectors";
+import {useLang} from "../use/lang";
+import {addNewNotification, addNotification} from "../store/error/actions";
 
-const Register = ({nagivateTo}) => {
+const Register = ({nagivateTo, handleClose}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -19,11 +22,8 @@ const Register = ({nagivateTo}) => {
     const [passwordError, setPasswordError] = useState('');
     const [passwordConfirmError, setPasswordConfirmError] = useState('');
     const error = useSelector(selectRegisterError);
-    const buttons = useSelector(selectButtons);
-    const inputs = useSelector(selectInputs);
-    const texts = useSelector(selectTexts);
-    const errors = useSelector(selectErrors);
     const navigate = useNavigate();
+    const {texts, inputs, buttons, errors} = useLang();
 
     useEffect(() => {
         if (user) {
@@ -32,7 +32,7 @@ const Register = ({nagivateTo}) => {
     }, [user, navigate])
 
     const validateEmail = () => {
-        const emailRegex = /\w{4,25}@\w+\.\w{2,3}/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
         if (!email.match(emailRegex) && email) {
             setEmailError(errors.emailRegex);
@@ -83,6 +83,33 @@ const Register = ({nagivateTo}) => {
 
         if (email && !emailError && password && !passwordError && passwordConfirm && !passwordConfirmError && displayName && !nicknameError) {
             dispatch(registerInitiate(email, password, displayName));
+        } else {
+            let text = 'Введите '
+            let list = []
+
+            if (!email) {
+                list.push('почту')
+            }
+
+            if (!password) {
+                list.push('пароль')
+            }
+            if (!passwordConfirm) {
+                list.push('подтверждение пароля')
+            }
+            if (!displayName) {
+                list.push('никнейм')
+            }
+
+            let displayList = []
+
+            if (list && list.length < 1) {
+                text = 'Заполните форму'
+            } else {
+                displayList = list.map(thisList => thisList).join(', ');
+            }
+
+            dispatch(addNewNotification(`${text}${displayList.length > 0 ? displayList : ''}`))
         }
 
         if (user) {
@@ -91,8 +118,11 @@ const Register = ({nagivateTo}) => {
     };
 
     return (
-        <div style={{padding: '0 20px'}}>
-            <h3 style={{display: 'flex', justifyContent: 'space-around'}}>{texts.register}</h3>
+        <div className="auth" style={{background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) center repeat`}}>
+            <div className="auth__header">
+                <span>{texts.register}</span>
+                <span className="auth__close" onClick={handleClose}>&times;</span>
+            </div>
             <Box
                 component="form"
                 sx={{
@@ -105,23 +135,26 @@ const Register = ({nagivateTo}) => {
             >
                 <input className="form-input" placeholder={inputs.email} name="email" type="email" value={email}
                        onFocus={clearEmailError} onBlur={validateEmail} onChange={(e) => setEmail(e.target.value)}/>
-                {emailError && (<div style={{color: 'white'}}>{emailError}</div>)}
+                {emailError && (<div className="error">{emailError}</div>)}
                 <input className="form-input" placeholder={inputs.nickname} name="nickname" type="text"
                        value={displayName} onFocus={clearNicknameError} onBlur={validateNickname}
+                       autoComplete="username"
                        onChange={(e) => setDisplayName(e.target.value)}/>
-                {nicknameError && (<div style={{color: 'white'}}>{nicknameError}</div>)}
+                {nicknameError && (<div className="error">{nicknameError}</div>)}
                 <input className="form-input" placeholder={inputs.password} name="password" type="password"
+                       autoComplete="new-password"
                        value={password} onFocus={clearPasswordError} onBlur={validatePassword}
                        onChange={(e) => setPassword(e.target.value)}/>
-                {passwordError && (<div style={{color: 'white'}}>{passwordError}</div>)}
+                {passwordError && (<div className="error">{passwordError}</div>)}
                 <input className="form-input" placeholder={inputs.confirmPassword} name="passwordConfirm"
+                       autoComplete="new-password"
                        type="password" value={passwordConfirm} onFocus={clearPasswordConfirmError}
                        onBlur={validatePasswordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)}/>
-                {passwordConfirmError && (<div style={{color: 'white'}}>{passwordConfirmError}</div>)}
-                <Button className="button-hover" type="submit" sx={{ml: 1}}>{buttons.signin}</Button>
+                {passwordConfirmError && (<div className="error">{passwordConfirmError}</div>)}
+                <Button className="button secondary" type="submit" sx={{ml: 1}}>{buttons.register}</Button>
             </Box>
             {error && (
-                <p style={{color: 'white'}}>{error}</p>
+                <div className="error">{error}</div>
             )}
         </div>
     );

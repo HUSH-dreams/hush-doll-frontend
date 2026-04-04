@@ -3,12 +3,14 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import ClearIcon from '@mui/icons-material/Clear';
-import {useDispatch} from "react-redux";
-import {tableDeleteClan} from "../store/table/actions";
+import {useDispatch, useSelector} from "react-redux";
+import {tableDeleteClan, tableToggleClan} from "../store/table/actions";
+import {selectChosenClan} from "../store/table/selectors";
 
 const TableClan = ({clan, me, table, token}) => {
     const [isMouseOver, setIsMouseOver] = useState(false);
     const dispatch = useDispatch();
+    const chosen = useSelector(selectChosenClan);
 
     const setMouseOver = () => {
         if (!isMouseOver) {
@@ -25,8 +27,13 @@ const TableClan = ({clan, me, table, token}) => {
     const handleDelete = () => {
         dispatch(tableDeleteClan(token, {
             clanId: clan.id,
-            tableId: table.dynamic.id
+            tableId: table.dynamic.id,
+            name: clan.name
         }))
+    }
+
+    const handleToggle = () => {
+        dispatch(tableToggleClan(clan.id));
     }
 
     return (
@@ -38,11 +45,15 @@ const TableClan = ({clan, me, table, token}) => {
             display: 'flex',
             boxShadow: (isMouseOver) && '0 0 10px 2px white',
             justifyContent: 'space-between',
-            padding: '6px 16px',
+            alignItems: 'center',
+            height: 30,
+            padding: '0 10px',
             boxSizing: 'border-box'
-        }}
+        }} className={chosen === clan.id && 'chosen-clan'}
              onMouseEnter={setMouseOver}
-             onMouseLeave={setMouseAway}>
+             onMouseLeave={setMouseAway}
+             onClick={handleToggle}
+        >
             <div>
                 {
                     clan.name

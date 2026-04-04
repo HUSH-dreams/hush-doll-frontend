@@ -16,9 +16,8 @@ const Flags = ({eng}) => {
     }
 
     return (
-        <div style={{marginTop: 10, display: 'flex', justifyContent: 'space-around', width: 90, marginRight: 10}}>
-            <ReactCountryFlag style={{scale: '1.8 1.3', cursor: "pointer"}}
-                              countryCode="RU"
+        <div className="page__flags">
+            <ReactCountryFlag countryCode="RU"
                               svg
                               cdnUrl="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.4.3/flags/1x1/"
                               cdnSuffix="svg"
@@ -26,8 +25,7 @@ const Flags = ({eng}) => {
                               id="lang-ru"
                               onClick={handleLangChange}
             />
-            <ReactCountryFlag style={{scale: '1.8 1.3', cursor: "pointer"}}
-                              countryCode="GB"
+            <ReactCountryFlag countryCode="GB"
                               svg
                               cdnUrl="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.4.3/flags/1x1/"
                               cdnSuffix="svg"

@@ -1,15 +1,11 @@
 import React from 'react';
+import Button from "@mui/material/Button";
 
-const AddCastle = ({chosen, children}) => {
+const AddCastle = ({chosen, children, click}) => {
     return (
-        <div className="table-container__table-content-add-castle"
-            style={{
-            color: chosen ? 'white' : 'inherit',
-            borderColor: chosen ? 'white' : 'dimgrey'
-        }}>
-            <span style={{marginRight: 12}}>{children}</span>
-            <span>{chosen ? '-' : '+'}</span>
-        </div>
+        <Button onClick={click}>
+            {children}
+        </Button>
     );
 };
 

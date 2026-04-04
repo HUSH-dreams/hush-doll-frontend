@@ -1,0 +1,27 @@
+.stat {
+    position: relative;
+    text-align: center;
+    width: 40px;
+    align-self: center;
+}
+
+.stat input {
+    width: 30px;
+    padding: 2px;
+    background-color: var(--primary-color);
+    box-shadow: var(--shadow1) !important;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 6px;
+}
+
+.stat input::placeholder {
+    color: var(--black-color);
+}
+
+@media screen and (min-device-width: 1024px) and (max-device-width: 1630px) {
+    .stat {
+        width: 30px;
+    }
+}

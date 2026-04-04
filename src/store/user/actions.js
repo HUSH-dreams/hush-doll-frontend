@@ -1,3 +1,7 @@
+import {addError, addMessage, addNewError} from "../error/actions";
+import { sendLogoutSignal } from '../websocket/actions';
+import {sendWebSocketMessage} from "../../websocket/WebSocketManager";
+
 export const REGISTER_START = "USER::REGISTER_START";
 export const REGISTER_SUCCESS = "USER::REGISTER_SUCCESS";
 export const REGISTER_ERROR = "USER::REGISTER_ERROR";
@@ -8,6 +12,11 @@ export const LOGOUT_START = "USER::LOGOUT_START";
 export const LOGOUT_SUCCESS = "USER::LOGOUT_SUCCESS";
 export const LOGOUT_ERROR = "USER::LOGOUT_ERROR";
 export const CLEAR_ERRORS = "USER::CLEAR_ERRORS";
+export const TOGGLE_VISIBLE = "USER::TOGGLE_VISIBLE";
+
+export const toggleVisible = () => ({
+    type: TOGGLE_VISIBLE
+})
 
 export const registerStart = () => ({
     type: REGISTER_START
@@ -50,8 +59,6 @@ export const logoutError = (error) => ({
     payload: error
 })
 
-
-
 export const clearErrors = () => ({
     type: CLEAR_ERRORS
 })
@@ -70,10 +77,13 @@ export const registerInitiate = (email, password, displayName) => {
                 })
             });
             const data = await response.json();
+
             if (!data.success) {
                 dispatch(registerError(data.reason))
+                dispatch(addError(data.reason))
             } else {
                 dispatch(registerSuccess(data.data));
+                dispatch(addMessage(`Добро пожаловать, ${displayName}`))
             }
         } catch (e) {
             dispatch(registerError(e.toString()));
@@ -99,6 +109,12 @@ export const loginInitiate = (email, password) => {
                 dispatch(loginError(data.reason))
             } else {
                 dispatch(loginSuccess(data.data));
+                dispatch(addMessage(`Добро пожаловать, ${data.data.user.username}`))
+
+                sendWebSocketMessage({
+                    type: 'auth',
+                    token: data.data.token // Лучше взять токен прямо из ответа, чтобы быть уверенным
+                });
             }
         } catch (e) {
             dispatch(registerError(e.toString()));
@@ -107,3 +123,17 @@ export const loginInitiate = (email, password) => {
     }
 }
 
+export const logoutUser = () => {
+    return async (dispatch) => {
+        dispatch(logoutStart());
+
+        try {
+            dispatch(logoutSuccess());
+            dispatch(sendLogoutSignal());
+        } catch (error) {
+            dispatch(logoutError(error.message || 'Ошибка выхода.'));
+            console.error("Error during logout process:", error);
+            dispatch(sendLogoutSignal());
+        }
+    };
+};

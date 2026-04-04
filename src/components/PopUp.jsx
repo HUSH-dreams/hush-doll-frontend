@@ -1,6 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import Card from '@mui/material/Card';
-import '../styles/PopUp.css';
 import {useSelector} from "react-redux";
 import {
     selectAccuracy,
@@ -21,10 +19,14 @@ import {
 } from "../store/doll/selectors";
 import {selectLang} from "../store/lang/selectors";
 
-const PopUp = ({
-                   item
-               }) => {
+export const getLowAndHighDamage = (avg, spread) => {
+    const low = Math.floor(avg - (avg * (spread + 1) / 10));
+    const high = Math.floor(avg + (avg * (spread + 1) / 10));
 
+    return low + ' - ' + high;
+}
+
+const PopUp = ({item}) => {
     const titleLevel = useSelector(selectTitleLevel);
     const degreeLevel = useSelector(selectDegreeLevel);
     const strength = useSelector(selectStrength);
@@ -58,6 +60,7 @@ const PopUp = ({
     const [titleAvailable, setTitleAvailable] = useState(true);
     const [degreeAvailable, setDegreeAvailable] = useState(true);
 
+    const url = `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`
 
     useEffect(() => {
         isAvailable();
@@ -134,69 +137,64 @@ const PopUp = ({
                 res += romans[i];
             }
         }
+
         return res;
     }
 
-    const getLowAndHighDamage = (avg) => {
-        const low = Math.floor(avg - (avg * (item.dmgSpread + 1) / 10));
-        const high = Math.floor(avg + (avg * (item.dmgSpread + 1) / 10));
-
-        return low + ' - ' + high;
-    }
-
     return (
-        <Card sx={{display: 'flex', flexDirection: 'column', padding: 0, width: 300}}>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                backgroundColor: 'green',
-                padding: '8px 16px',
-                background: `url(${process.env.REACT_APP_BACKEND_URL}/image/background) no-repeat center`,
-                color: 'rgb(234, 201, 136)'
-            }}>
-                <div style={{fontWeight: 'bold', marginRight: 10}}>
+        <div className="item--popup">
+            <div
+                className="item--popup__header"
+                style={{background: url}}>
+                <span>
                     {eng ? item.nameEng : item.nameRu}
-                </div>
-                <div className="header-corner">
+                </span>
+                <span>
                     {toRoman(item.level)}
-                </div>
+                </span>
             </div>
-            <div className="popup-main">
-                <div className="center-container">
+            <div className="item--popup__main">
+                <div className="item--popup__center">
                     {item.avgPd > 0 && (
-                        <div className="center">
+                        <div>
                             <img src={`${process.env.REACT_APP_BACKEND_URL}/image/td`}
-                                 alt="some icon"/> {getLowAndHighDamage(item.avgPd)}
+                                 alt="some icon"/> {getLowAndHighDamage(item.avgPd, item.dmgSpread)}
                         </div>
                     )}
                     {item.avgMd > 0 && (
-                        <div className="center">
+                        <div>
                             <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dd`}
-                                 alt="some icon"/> {getLowAndHighDamage(item.avgMd)}
+                                 alt="some icon"/> {getLowAndHighDamage(item.avgMd, item.dmgSpread)}
                         </div>
                     )}
                     {item.avgPranaD > 0 && (
-                        <div className="center">
+                        <div>
                             <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dd2`}
-                                 alt="some icon"/> {getLowAndHighDamage(item.avgPranaD)}
+                                 alt="some icon"/> {getLowAndHighDamage(item.avgPranaD, item.dmgSpread)}
                         </div>
                     )}
                     {item.reqHp !== 0 && (
-                        <div className="center">
-                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tht`} alt="some icon"/> {Math.abs(item.reqHp)}
+                        <div>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tht`}
+                                 alt="some icon"/> {Math.abs(item.reqHp)}
                         </div>
                     )}
                     {item.reqPrana !== 0 && (
-                        <div className="center">
-                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dht`} alt="some icon"/> {Math.abs(item.reqPrana)}
+                        <div>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dht`}
+                                 alt="some icon"/> {Math.abs(item.reqPrana)}
                         </div>
                     )}
                 </div>
-                <div className="popup-main" style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <div style={{padding: '0 6px 0 16px'}}>
+                <div className="item--popup__left-right">
+                    <div className="item--popup__left">
                         {item.reqStrength !== 0 && (
-                            <div style={{color: !strengthAvailable && 'red', fontWeight: !strengthAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t1`} alt="some icon"/> {item.reqStrength}
+                            <div style={{
+                                color: !strengthAvailable && 'red',
+                                fontWeight: !strengthAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t1`}
+                                     alt="some icon"/> {item.reqStrength}
                             </div>
                         )}
                         {item.reqDexterity !== 0 && (
@@ -204,12 +202,17 @@ const PopUp = ({
                                 color: !dexterityAvailable && 'red',
                                 fontWeight: !dexterityAvailable && 'bold'
                             }}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t2`} alt="some icon"/> {item.reqDexterity}
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t2`}
+                                     alt="some icon"/> {item.reqDexterity}
                             </div>
                         )}
                         {item.reqAccuracy !== 0 && (
-                            <div style={{color: !accuracyAvailable && 'red', fontWeight: !accuracyAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t3`} alt="some icon"/> {item.reqAccuracy}
+                            <div style={{
+                                color: !accuracyAvailable && 'red',
+                                fontWeight: !accuracyAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t3`}
+                                     alt="some icon"/> {item.reqAccuracy}
                             </div>
                         )}
                         {item.reqEndurance !== 0 && (
@@ -217,47 +220,80 @@ const PopUp = ({
                                 color: !enduranceAvailable && 'red',
                                 fontWeight: !enduranceAvailable && 'bold'
                             }}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t4`} alt="some icon"/> {item.reqEndurance}
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/t4`}
+                                     alt="some icon"/> {item.reqEndurance}
                             </div>
                         )}
                         {item.reqEarth !== 0 && (
-                            <div style={{color: !earthAvailable && 'red', fontWeight: !earthAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d1`} alt="some icon"/> {item.reqEarth}
+                            <div style={{
+                                color: !earthAvailable && 'red',
+                                fontWeight: !earthAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d1`}
+                                     alt="some icon"/> {item.reqEarth}
                             </div>
                         )}
                         {item.reqAir !== 0 && (
-                            <div style={{color: !airAvailable && 'red', fontWeight: !airAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d2`} alt="some icon"/> {item.reqAir}
+                            <div style={{
+                                color: !airAvailable && 'red',
+                                fontWeight: !airAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d2`}
+                                     alt="some icon"/> {item.reqAir}
                             </div>
                         )}
                         {item.reqWater !== 0 && (
-                            <div style={{color: !waterAvailable && 'red', fontWeight: !waterAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d3`} alt="some icon"/> {item.reqWater}
+                            <div style={{
+                                color: !waterAvailable && 'red',
+                                fontWeight: !waterAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d3`}
+                                     alt="some icon"/> {item.reqWater}
                             </div>
                         )}
                         {item.reqFire !== 0 && (
-                            <div style={{color: !fireAvailable && 'red', fontWeight: !fireAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d4`} alt="some icon"/> {item.reqFire}
+                            <div style={{
+                                color: !fireAvailable && 'red',
+                                fontWeight: !fireAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/d4`}
+                                     alt="some icon"/> {item.reqFire}
                             </div>
                         )}
                         {item.reqTitleLvl !== 0 && (
-                            <div style={{color: !titleAvailable && 'red', fontWeight: !titleAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`} alt="some icon"/> {item.reqTitleLvl}
+                            <div style={{
+                                color: !titleAvailable && 'red',
+                                fontWeight: !titleAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`}
+                                     alt="some icon"/> {item.reqTitleLvl}
                             </div>
                         )}
                         {item.reqDegreeLvl !== 0 && (
-                            <div style={{color: !degreeAvailable && 'red', fontWeight: !degreeAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`} alt="some icon"/> {item.reqDegreeLvl}
+                            <div style={{
+                                color: !degreeAvailable && 'red',
+                                fontWeight: !degreeAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`}
+                                     alt="some icon"/> {item.reqDegreeLvl}
                             </div>
                         )}
                         {item.maxTitleLvl !== 0 && (
-                            <div style={{color: !titleAvailable && 'red', fontWeight: !titleAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`} alt="some icon"/> &lt;{item.maxTitleLvl + 1}
+                            <div style={{
+                                color: !titleAvailable && 'red',
+                                fontWeight: !titleAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/tl`}
+                                     alt="some icon"/> &lt;{item.maxTitleLvl + 1}
                             </div>
                         )}
                         {item.maxDegreeLvl !== 0 && (
-                            <div style={{color: !degreeAvailable && 'red', fontWeight: !degreeAvailable && 'bold'}}>
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`} alt="some icon"/> &lt;{item.maxDegreeLvl + 1}
+                            <div style={{
+                                color: !degreeAvailable && 'red',
+                                fontWeight: !degreeAvailable && 'bold'
+                            }}>
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dl`}
+                                     alt="some icon"/> &lt;{item.maxDegreeLvl + 1}
                             </div>
                         )}
                         {item.reqProfessionLvl !== 0 && (
@@ -270,7 +306,7 @@ const PopUp = ({
                             </div>
                         )}
                     </div>
-                    <div style={{padding: '0 16px 0 0', textAlign: 'right'}}>
+                    <div className="item--popup__right">
                         {item.effectIconName && (
                             <div>
                                 <img src={`${process.env.REACT_APP_BACKEND_URL}/image/${item.effectIconName}`}
@@ -283,11 +319,11 @@ const PopUp = ({
                             </div>
                         )}
                         {eng ? (item.effectTextEng && (
-                            <div style={{maxWidth: 180}}>
+                            <div className="item--popup__effect">
                                 {item.effectTextEng}
                             </div>
                         )) : (item.effectTextRu && (
-                            <div style={{maxWidth: 180}}>
+                            <div className="item--popup__effect">
                                 {item.effectTextRu}
                             </div>
                         ))}
@@ -427,24 +463,25 @@ const PopUp = ({
                         )}
                     </div>
                 </div>
-                <div className="center-container">
+                <div className="item--popup__center">
                     {item.distance > 0 && (
-                        <div className="center"><img src={`${process.env.REACT_APP_BACKEND_URL}/image/dist`}
-                                                     alt="some icon"/>{Math.abs(item.distance)} {
+                        <div>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/dist`}
+                                 alt="some icon"/>{Math.abs(item.distance)} {
                             item.aoe > 0 && (
                                 <span>[{Math.abs(item.aoe)}]</span>
                             )
                         }</div>
                     )}
                     {item.cooldown !== 0 && (
-                        <div className="center" style={{paddingBottom: 12}}><img src={`${process.env.REACT_APP_BACKEND_URL}/image/delay`}
-                                                                                 alt="some icon"/>{Math.floor(item.cooldown * 100) / 100} {eng ? 's.' : 'сек.'}
+                        <div>
+                            <img src={`${process.env.REACT_APP_BACKEND_URL}/image/delay`}
+                                 alt="some icon"/>{Math.floor(item.cooldown * 100) / 100} {eng ? 's.' : 'сек.'}
                         </div>
                     )}
                 </div>
             </div>
-
-        </Card>
+        </div>
     );
 };
 
